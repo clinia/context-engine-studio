@@ -1,0 +1,21 @@
+# Blank issues are disabled on purpose. Most misfiled reports here are engine or
+# workspace problems that Studio cannot cause and this repository cannot fix, so
+# every path is routed deliberately. The two templates cover Studio itself;
+# everything else belongs somewhere that can actually resolve it.
+blank_issues_enabled: false
+contact_links:
+  # The support channel is an address, not a page, but `url` cannot be a
+  # `mailto:` — GitHub validates it against `^h` and silently drops the whole
+  # link from the picker rather than erroring. So this points at the file that
+  # names the address and the `about` states it outright, exactly as the
+  # security row below does. Keep the address identical in all three places
+  # that carry it: here, README.md, and CONTRIBUTING.md.
+  - name: Workspace, credential, ingest, or API problem
+    url: https://github.com/clinia/context-engine-studio/blob/main/CONTRIBUTING.md#where-to-take-things
+    about: Failed ingests, 401s, missing patients, or wrong results are service-side. Studio holds no data and runs no engine, so these cannot be diagnosed or fixed from this repository — email support@clinia.com.
+  - name: Question, or something you're not sure is a bug
+    url: https://github.com/clinia/context-engine-studio/discussions
+    about: Ask in Discussions. Better place for "how do I..." and "is this expected?" than an issue.
+  - name: Security vulnerability
+    url: https://github.com/clinia/context-engine-studio/blob/main/SECURITY.md
+    about: Email security@clinia.com instead of filing publicly. See SECURITY.md for what is in scope.

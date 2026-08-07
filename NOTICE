@@ -1,0 +1,26 @@
+Clinia Context Engine Studio
+Copyright 2026 Clinia Health Inc.
+
+This product includes software developed at Clinia Health Inc., licensed under
+the Apache License, Version 2.0. See the LICENSE file for the full terms.
+
+--------------------------------------------------------------------------------
+
+shadcn/ui
+Copyright (c) 2023 shadcn
+Licensed under the MIT License; see LICENSE-shadcn-ui for the full terms.
+
+The user-interface components in src/components/ui/, together with
+src/lib/utils.ts and src/hooks/use-mobile.ts, are derived from shadcn/ui
+(https://ui.shadcn.com) and have been modified.
+
+--------------------------------------------------------------------------------
+
+Trademarks
+
+"Clinia" and the Clinia name, logo and other brand features are trademarks of
+Clinia Health Inc. Section 6 of the Apache License grants no rights to use them,
+and this notice grants none either. The marks are reproduced in this repository
+only in public/Logomark.svg, public/Logotype.svg, and the application icons
+derived from them; replace those files in any fork, redistribution, or derivative
+work that is not published by Clinia Health Inc.

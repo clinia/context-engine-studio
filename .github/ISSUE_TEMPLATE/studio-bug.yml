@@ -1,0 +1,105 @@
+name: Studio bug
+description: Something in the Studio application behaves incorrectly
+labels: ["bug", "studio"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Before you fill this in**, two checks that save everyone time:
+
+        - **Is it Studio, or is it the engine?** Studio holds no data and runs no engine — it renders what the API returns. Failed ingests, 401s, missing patients, and slow or wrong results are almost always the workspace or the API, and support can diagnose those where we can't. There's a link for that on the previous page.
+        - **Is it a security issue?** If so, close this and email security@clinia.com instead. See `SECURITY.md`.
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: This is a problem with the Studio application itself, not a workspace, credential, ingest, or API error
+          required: true
+        - label: This report contains no patient data, protected health information, credentials, tokens, or internal hostnames — including in screenshots and logs
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Studio version
+      description: The release tag you're running, e.g. `v0.4.1`. Find it in `package.json` or `git describe --tags`.
+      placeholder: v0.4.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: how-run
+    attributes:
+      label: How are you running Studio?
+      options:
+        - Local clone, dev server (pnpm dev)
+        - Local clone, production build (pnpm build && pnpm start)
+        - Deployed somewhere myself
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: runtime
+    attributes:
+      label: Node and pnpm versions
+      description: Output of `node --version` and `pnpm --version`.
+      placeholder: node v22.14.0, pnpm 10.6.1
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: Firefox 141, macOS 15.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps from a fresh start. If it needs a specific patient record, reproduce it with the synthetic dataset from the README and say so.
+      placeholder: |
+        1. Start Studio against a workspace with one patient
+        2. Open the patient and switch to the Narrative tab
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+      description: Include the error text if there is one. Screenshots help, as long as no patient data is visible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Browser console and/or the terminal running Studio. Redact tokens and workspace identifiers before pasting.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: How often it happens, what you've already ruled out, whether it worked in an earlier release.
+    validations:
+      required: false

@@ -1,0 +1,87 @@
+{
+  "home": {
+    "title": "Hello world!"
+  },
+  "chat": {
+    "empty": "Ask anything about this patient's history.",
+    "placeholder": "Message the clinical assistant…",
+    "thinking": "Thinking…",
+    "error": "Something went wrong. Please try again.",
+    "you": "You",
+    "assistant": "Assistant",
+    "reasoning": "Thinking",
+    "running": "running…",
+    "sendHint": "to send",
+    "toolCalls": "{count, plural, one {# tool call} other {# tool calls}}",
+    "tokens": "{count, plural, one {# token} other {# tokens}}",
+    "turns": "{count, plural, one {# turn} other {# turns}}",
+    "inputLabel": "Input",
+    "outputLabel": "Output",
+    "done": "done",
+    "failed": "failed",
+    "generateMemories": "Generate memories",
+    "generatingMemories": "Generating…",
+    "memoriesGenerated": "Memories generated",
+    "memoriesFailed": "Generation failed"
+  },
+  "navVfs": {
+    "label": "Virtual file system",
+    "loadError": "failed to load files",
+    "empty": "no files",
+    "dirLoadError": "failed to load",
+    "dirEmpty": "empty"
+  },
+  "navChats": {
+    "label": "Chats",
+    "loadError": "failed to load chats",
+    "empty": "no chats yet"
+  },
+  "vfsViewer": {
+    "selectPrompt": "Select a file to view its contents",
+    "loading": "Loading…",
+    "loadError": "Failed to load file",
+    "tabNarrative": "Narrative",
+    "tabCompact": "Compact",
+    "tabStructured": "Structured"
+  },
+  "navActions": {
+    "deletePatient": "Delete patient",
+    "help": "Help",
+    "deleteTitle": "Delete patient?",
+    "deleteDescription": "This permanently removes {name} and all associated entities, events, and relationships. This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete patient",
+    "deleting": "Deleting…"
+  },
+  "patientNotFound": {
+    "title": "Patient not found",
+    "description": "This patient doesn't exist or may have been deleted. The link you followed could be out of date.",
+    "back": "Back to patients"
+  },
+  "patientSwitcher": {
+    "patients": "Patients",
+    "noPatients": "No patients",
+    "selectPatient": "Select a patient",
+    "createPatient": "Create patient"
+  },
+  "patientIngest": {
+    "onboardingTitle": "Add your first patient",
+    "onboardingDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, or documents) to ingest.",
+    "createTitle": "Create a patient",
+    "createDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, or documents) to ingest.",
+    "patientIdLabel": "Patient ID",
+    "patientIdPlaceholder": "Auto-detected from the folder name",
+    "dropzoneTitle": "Drop a patient folder here",
+    "dropzoneHint": "or click to browse",
+    "filesDetected": "{count, plural, one {# file detected} other {# files detected}}",
+    "clear": "Clear",
+    "submit": "Create patient & ingest",
+    "submitting": "Ingesting…",
+    "submittingProgress": "Ingesting… ({current}/{total})",
+    "errors": {
+      "invalidJson": "{name} is not valid JSON.",
+      "ingestionFailed": "Ingestion failed.",
+      "timedOut": "Timed out waiting for ingestion to finish."
+    }
+  }
+}

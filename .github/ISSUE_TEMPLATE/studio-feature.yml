@@ -1,0 +1,52 @@
+name: Studio feature request
+description: Suggest a change or addition to the Studio application
+labels: ["enhancement", "studio"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. Two things worth knowing so this doesn't disappoint you:
+
+        - **We can't take a pull request for it.** This repository publishes releases and its `main` is replaced on each one, so PRs can't be merged here by anyone. Describing the change is the useful contribution — see `CONTRIBUTING.md`. Requests are read, but nothing here is a commitment to build, schedule, or reply to one.
+        - **If it's really about the engine or the API**, Studio can't be where it's fixed. Feature requests for the Context Engine itself go to support@clinia.com or your Clinia contact.
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: This is about the Studio application, not the Context Engine API or a workspace capability
+          required: true
+        - label: This request contains no patient data, protected health information, or credentials
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you running into?
+      description: Describe the situation you're in, not the feature you have in mind. This is the part that most affects whether we build something — and we may see a different solution to the same problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you'd like Studio to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you've tried or considered
+      description: Workarounds you're using today, or approaches you rejected and why.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Who this affects, how often, and whether it blocks you or is a nice-to-have.
+    validations:
+      required: false

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1784044480369,
+      "tag": "0000_salty_venus",
+      "breakpoints": true
+    }
+  ]
+}

@@ -94,15 +94,35 @@ export async function deletePatient(patientId: string): Promise<Result<true>> {
 }
 
 /**
+ * What {@link ingestBatch} accepts, which differs from the API's `IngestBatchBody`
+ * in exactly one way: each CDA document is wrapped in an object instead of sitting
+ * in a bare `string[]`.
+ *
+ * The wrapper is what makes large batches transmissible. React's Flight decoder —
+ * which parses every Server Action argument — gives each root array a budget of
+ * 1e6 "slots" and charges a plain string its full character length, so a
+ * `cda: string[]` carrying more than ~1 MB of markup is rejected with "Maximum
+ * array nesting exceeded" long before the 25 MB body limit in `next.config.ts` is
+ * anywhere near. A value reached through an object starts a fresh budget, so
+ * wrapping each document keeps the charge off the array.
+ */
+export type IngestBatchPayload = Omit<IngestBatchBody, "cda"> & {
+  cda?: { xml: string }[];
+};
+
+/**
  * Submits a batch of FHIR bundles, CDA documents, and/or document registrations
  * for a patient. `wait` blocks up to that many ms for the execution to reach a
  * terminal status before returning.
  */
 export async function ingestBatch(
   patientId: string,
-  body: IngestBatchBody,
+  payload: IngestBatchPayload,
   wait = 30000,
 ): Promise<Result<IngestExecutionEnvelope>> {
+  const { cda, ...rest } = payload;
+  const body: IngestBatchBody = cda ? { ...rest, cda: cda.map((doc) => doc.xml) } : rest;
+
   const { data, error } = await serverClient.http.POST("/v1/patients/{patientId}/ingest", {
     params: { path: { patientId }, query: { wait } },
     body,

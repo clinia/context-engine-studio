@@ -1,5 +1,6 @@
 import type { IngestBatchBody } from "@clinia/context-engine-js";
 
+import type { IngestBatchPayload } from "@/lib/context-engine-client/actions";
 import { classifyFile, type FileKind } from "@/lib/ingest/classify";
 import { err, ok, type Result } from "@/lib/result";
 
@@ -95,7 +96,7 @@ function chunkBySize<T extends { bytes: number }>(items: T[], maxBytes: number):
 export async function planIngestBatches(
   detected: DetectedFile[],
   maxBytes: number,
-): Promise<Result<IngestBatchBody[], BuildBatchError>> {
+): Promise<Result<IngestBatchPayload[], BuildBatchError>> {
   // Pass 1 — read and measure every file, keeping them bucketed by kind.
   const fhir: Extract<ReadItem, { kind: "fhir" }>[] = [];
   const cda: Extract<ReadItem, { kind: "cda" }>[] = [];
@@ -110,12 +111,12 @@ export async function planIngestBatches(
   }
 
   // Pass 2 — split each kind into size-bounded batches.
-  const batches: IngestBatchBody[] = [];
+  const batches: IngestBatchPayload[] = [];
   for (const chunk of chunkBySize(fhir, maxBytes)) {
     batches.push({ fhir: chunk.map((i) => i.resource) });
   }
   for (const chunk of chunkBySize(cda, maxBytes)) {
-    batches.push({ cda: chunk.map((i) => i.xml) });
+    batches.push({ cda: chunk.map((i) => ({ xml: i.xml })) });
   }
   for (const chunk of chunkBySize(documents, maxBytes)) {
     batches.push({ documents: chunk.map((i) => i.document) });

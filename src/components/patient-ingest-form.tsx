@@ -25,7 +25,10 @@ const KIND_LABEL: Record<FileKind, string> = {
 };
 
 const POLL_INTERVAL_MS = 2000;
-const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+// An ingest ends with model calls over the whole record, so the wait scales with the
+// number of documents rather than with the upload. Five minutes reported a timeout on
+// records that went on to succeed.
+const POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
 // Keep each batch comfortably under the Server Action body-size limit configured
 // in next.config.ts (`serverActions.bodySizeLimit`), leaving margin for encoding.

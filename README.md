@@ -11,18 +11,7 @@ The engine turns fragmented health records (FHIR R4 bundles, C-CDA documents, lo
 
 Studio is a local starting point and a tool for poking at your own data. It is not a hosted, production, or supported end-user product.
 
-<!--
-SCREENSHOTS (CCE-766) — deliberately not embedded yet.
-Capture only after CCE-763 lands: the chat UI still renders a retired product
-name as the assistant label (messages/en.json:11).
-Planned shots, all against the synthetic Jeanne Tremblay dataset only:
-  1. Patient overview with the virtual file system tree expanded
-  2. A condition story open in the Narrative tab
-  3. A chat turn showing tool calls against the VFS with file citations
-  4. The ingest dropzone mid-ingest
-Before committing any image: no real patient data, no internal hostnames, no
-workspace IDs, no console URLs, no email addresses in the UI chrome.
--->
+![Studio Screenshot](docs/studio.png)
 
 ## What you can do with it
 
@@ -99,8 +88,6 @@ If you don't have a de-identified record to hand, use **Jeanne Tremblay** — a 
 Unzip it and drop the folder onto the onboarding dropzone.
 
 **Provenance.** This dataset is entirely synthetic. It describes no real person and contains no protected health information; every name, identifier, date, and clinical event in it was generated. See the [Synthetic Patient Dataset](https://docs.clinia.com/docs/workspace-guides/synthetic-patient) documentation for the full contents and timeline.
-
-<!-- TODO(CCE-762): link the formal synthetic-provenance attestation here once written. -->
 
 ## Getting help
 

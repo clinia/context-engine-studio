@@ -5,11 +5,21 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { detectFiles, planIngestBatches, type DetectedFile } from "@/lib/ingest/build-batch";
+import {
+  detectFiles,
+  planSubmissions,
+  type DetectedFile,
+  type PlanSubmissionsError,
+} from "@/lib/ingest/plan-submissions";
 import type { FileKind } from "@/lib/ingest/classify";
 import { droppedDirectoryName, readDroppedItems } from "@/lib/ingest/collect";
-import { getExecution, ingestBatch, upsertPatient } from "@/lib/context-engine-client/actions";
-import { attempt, err, ok, type Result } from "@/lib/result";
+import {
+  countIngestions,
+  ingestCdaR2,
+  ingestFhirR4,
+  upsertPatient,
+} from "@/lib/context-engine-client/actions";
+import { attempt, err, type Result } from "@/lib/result";
 import {
   AlertCircleIcon,
   CloudUploadIcon,
@@ -21,7 +31,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 const KIND_LABEL: Record<FileKind, string> = {
   fhir: "FHIR",
   cda: "CDA",
-  document: "Document",
+  unsupported: "Skipped",
 };
 
 const POLL_INTERVAL_MS = 2000;
@@ -30,9 +40,10 @@ const POLL_INTERVAL_MS = 2000;
 // records that went on to succeed.
 const POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
-// Keep each batch comfortably under the Server Action body-size limit configured
-// in next.config.ts (`serverActions.bodySizeLimit`), leaving margin for encoding.
-const MAX_BATCH_BYTES = 20 * 1024 * 1024;
+// One call carries one file, so this bounds a file rather than a batch. Kept under the
+// Server Action body-size limit configured in next.config.ts
+// (`serverActions.bodySizeLimit`), leaving margin for encoding.
+const MAX_SUBMISSION_BYTES = 20 * 1024 * 1024;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -62,6 +73,12 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
     inputRef.current?.setAttribute("webkitdirectory", "");
   }, []);
 
+  // Neither ingest endpoint takes an arbitrary file, so a dropped PDF has nowhere to
+  // go. It is skipped rather than refused — a folder of clinical data routinely carries
+  // a few — and the list marks it, so the skip is visible rather than silent.
+  const skipped = files.filter(({ kind }) => kind === "unsupported").length;
+  const submittable = files.length - skipped;
+
   const adoptFiles = React.useCallback((collected: File[], derivedId: string | null) => {
     if (collected.length === 0) return;
     setError(null);
@@ -82,23 +99,42 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
     adoptFiles(collected, folderNameFromInput(collected));
   };
 
-  const waitForTerminal = async (id: string, executionId: string): Promise<Result<void>> => {
+  const planErrorMessage = (planError: PlanSubmissionsError): string => {
+    const values = { name: planError.name };
+    switch (planError.reason) {
+      case "unreadable":
+        return t("errors.unreadable", values);
+      case "invalidJson":
+        return t("errors.invalidJson", values);
+      case "notFhir":
+        return t("errors.notFhir", values);
+      case "tooLarge":
+        return t("errors.fileTooLarge", values);
+    }
+  };
+
+  /**
+   * Blocks until this patient has nothing outstanding, then answers how many of its
+   * submissions failed outright.
+   *
+   * Polls the list rather than each receipt: `?status=pending,processing` is the
+   * outstanding set and its total is the count, so a wait costs one request per
+   * interval however many files were sent.
+   */
+  const waitForSettled = async (id: string): Promise<Result<number>> => {
     const deadline = Date.now() + POLL_TIMEOUT_MS;
     while (Date.now() < deadline) {
       await sleep(POLL_INTERVAL_MS);
-      const result = await attempt(getExecution(id, executionId));
-      if (!result.ok) return result;
-      const { execution } = result.data;
-      if (execution.status === "succeeded" || execution.status === "skipped") return ok(undefined);
-      if (execution.status === "failed")
-        return err(execution.errorCode ?? t("errors.ingestionFailed"));
+      const outstanding = await attempt(countIngestions(id, ["pending", "processing"]));
+      if (!outstanding.ok) return outstanding;
+      if (outstanding.data === 0) return attempt(countIngestions(id, ["failed"]));
     }
     return err(t("errors.timedOut"));
   };
 
   const submit = async () => {
     const id = patientId.trim();
-    if (!id || files.length === 0) return;
+    if (!id || submittable === 0) return;
 
     setIsIngesting(true);
     setProgress(null);
@@ -110,33 +146,44 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
       setProgress(null);
     };
 
-    const planned = await planIngestBatches(files, MAX_BATCH_BYTES);
-    if (!planned.ok) return fail(t("errors.invalidJson", { name: planned.error.invalidFile }));
+    const planned = await planSubmissions(files, MAX_SUBMISSION_BYTES);
+    if (!planned.ok) return fail(planErrorMessage(planned.error));
 
     const upserted = await attempt(upsertPatient(id));
     if (!upserted.ok) return fail(upserted.error);
 
-    const batches = planned.data;
-    for (let index = 0; index < batches.length; index++) {
-      setProgress({ current: index + 1, total: batches.length });
+    // What this patient had already lost, so the count after settling reflects only
+    // what this submission run sent.
+    const failedBefore = await attempt(countIngestions(id, ["failed"]));
+    if (!failedBefore.ok) return fail(failedBefore.error);
 
-      const ingested = await attempt(ingestBatch(id, batches[index]));
-      if (!ingested.ok) return fail(ingested.error);
+    const submissions = planned.data;
+    for (let index = 0; index < submissions.length; index++) {
+      setProgress({ current: index + 1, total: submissions.length });
 
-      const envelope = ingested.data;
-      if (envelope.status === "failed") {
-        return fail(envelope.error?.message ?? t("errors.ingestionFailed"));
-      }
-      if (envelope.status !== "succeeded" && envelope.status !== "skipped") {
-        const terminal = await waitForTerminal(id, envelope.executionId);
-        if (!terminal.ok) return fail(terminal.error);
-      }
+      const submission = submissions[index];
+      const accepted = await attempt(
+        submission.kind === "fhir"
+          ? ingestFhirR4(id, submission.resource)
+          : ingestCdaR2(id, submission.document),
+      );
+      if (!accepted.ok) return fail(accepted.error);
+    }
+
+    const failedAfter = await waitForSettled(id);
+    if (!failedAfter.ok) return fail(failedAfter.error);
+
+    // Only a total loss keeps the user here. Anything that landed is worth opening the
+    // patient for — including a `partial` submission, which is content stored with one
+    // lane degraded rather than a failure.
+    if (failedAfter.data - failedBefore.data >= submissions.length) {
+      return fail(t("errors.ingestionFailed"));
     }
 
     onSuccess(id);
   };
 
-  const canSubmit = patientId.trim().length > 0 && files.length > 0 && !isIngesting;
+  const canSubmit = patientId.trim().length > 0 && submittable > 0 && !isIngesting;
 
   return (
     <div className="space-y-6">
@@ -176,7 +223,10 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
       {files.length > 0 && (
         <div className="overflow-hidden rounded-xl border">
           <div className="text-muted-foreground flex items-center justify-between px-3 py-2 text-xs">
-            <span>{t("filesDetected", { count: files.length })}</span>
+            <span>
+              {t("filesDetected", { count: files.length })}
+              {skipped > 0 && ` · ${t("filesSkipped", { count: skipped })}`}
+            </span>
             <Button variant="ghost" size="xs" onClick={() => setFiles([])} disabled={isIngesting}>
               <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
               {t("clear")}
@@ -193,7 +243,11 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
                   strokeWidth={2}
                   className="text-muted-foreground size-4 shrink-0"
                 />
-                <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                <span
+                  className={`min-w-0 flex-1 truncate ${kind === "unsupported" ? "text-muted-foreground line-through" : ""}`}
+                >
+                  {file.name}
+                </span>
                 <span className="text-muted-foreground shrink-0 text-xs">{KIND_LABEL[kind]}</span>
               </li>
             ))}

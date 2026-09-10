@@ -66,20 +66,24 @@
   },
   "patientIngest": {
     "onboardingTitle": "Add your first patient",
-    "onboardingDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, or documents) to ingest.",
+    "onboardingDescription": "Name a patient and drop a folder of clinical files (FHIR or CDA) to ingest.",
     "createTitle": "Create a patient",
-    "createDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, or documents) to ingest.",
+    "createDescription": "Name a patient and drop a folder of clinical files (FHIR or CDA) to ingest.",
     "patientIdLabel": "Patient ID",
     "patientIdPlaceholder": "Auto-detected from the folder name",
     "dropzoneTitle": "Drop a patient folder here",
     "dropzoneHint": "or click to browse",
     "filesDetected": "{count, plural, one {# file detected} other {# files detected}}",
+    "filesSkipped": "{count, plural, one {# skipped} other {# skipped}} (only .json and .xml are ingested)",
     "clear": "Clear",
     "submit": "Create patient & ingest",
     "submitting": "Ingesting…",
     "submittingProgress": "Ingesting… ({current}/{total})",
     "errors": {
+      "unreadable": "{name} could not be read.",
       "invalidJson": "{name} is not valid JSON.",
+      "notFhir": "{name} is not a FHIR resource — it has no resourceType.",
+      "fileTooLarge": "{name} is too large to upload in one request.",
       "ingestionFailed": "Ingestion failed.",
       "timedOut": "Timed out waiting for ingestion to finish."
     }

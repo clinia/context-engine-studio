@@ -4,9 +4,9 @@ import { serverClient } from "@/lib/context-engine-client/server";
 import { err, errorMessage, ok, type Result } from "@/lib/result";
 import type {
   BrowseResult,
-  IngestBatchBody,
-  IngestExecutionDetail,
-  IngestExecutionEnvelope,
+  IngestFhirBody,
+  Ingestion,
+  IngestionStatus,
   Patient,
   PatientList,
   ReadResponse,
@@ -94,52 +94,71 @@ export async function deletePatient(patientId: string): Promise<Result<true>> {
 }
 
 /**
- * What {@link ingestBatch} accepts, which differs from the API's `IngestBatchBody`
- * in exactly one way: each CDA document is wrapped in an object instead of sitting
- * in a bare `string[]`.
+ * What {@link ingestCdaR2} accepts: the markup wrapped in an object rather than
+ * passed as a bare string.
  *
- * The wrapper is what makes large batches transmissible. React's Flight decoder —
- * which parses every Server Action argument — gives each root array a budget of
- * 1e6 "slots" and charges a plain string its full character length, so a
- * `cda: string[]` carrying more than ~1 MB of markup is rejected with "Maximum
- * array nesting exceeded" long before the 25 MB body limit in `next.config.ts` is
- * anywhere near. A value reached through an object starts a fresh budget, so
- * wrapping each document keeps the charge off the array.
+ * The wrapper is what makes a large document transmissible. React's Flight
+ * decoder — which parses every Server Action argument — gives the argument array
+ * a budget of 1e6 "slots" and charges a plain string its full character length,
+ * so a document over ~1 MB is rejected with "Maximum array nesting exceeded"
+ * long before the 25 MB body limit in `next.config.ts` is anywhere near. A value
+ * reached through an object starts a fresh budget.
  */
-export type IngestBatchPayload = Omit<IngestBatchBody, "cda"> & {
-  cda?: { xml: string }[];
-};
+export type CdaDocument = { xml: string };
 
 /**
- * Submits a batch of FHIR bundles, CDA documents, and/or document registrations
- * for a patient. `wait` blocks up to that many ms for the execution to reach a
- * terminal status before returning.
+ * Submits one FHIR Bundle or resource, parsed as R4. Returns the receipt to poll —
+ * the submission is accepted, not processed, by the time this resolves.
  */
-export async function ingestBatch(
+export async function ingestFhirR4(
   patientId: string,
-  payload: IngestBatchPayload,
-  wait = 30000,
-): Promise<Result<IngestExecutionEnvelope>> {
-  const { cda, ...rest } = payload;
-  const body: IngestBatchBody = cda ? { ...rest, cda: cda.map((doc) => doc.xml) } : rest;
-
-  const { data, error } = await serverClient.http.POST("/v1/patients/{patientId}/ingest", {
-    params: { path: { patientId }, query: { wait } },
-    body,
-  });
+  resource: IngestFhirBody,
+): Promise<Result<Ingestion>> {
+  const { data, error } = await serverClient.http.POST(
+    "/v1/patients/{patientId}/ingestions/fhir/r4",
+    { params: { path: { patientId } }, body: resource },
+  );
   return toResult(data, error);
 }
 
-/** Retrieves the full detail (including current status) of an ingest execution. */
-export async function getExecution(
+/**
+ * Submits one CDA R2 document as `application/cda+xml`. Returns the receipt to
+ * poll, like {@link ingestFhirR4}.
+ */
+export async function ingestCdaR2(
   patientId: string,
-  executionId: string,
-): Promise<Result<IngestExecutionDetail>> {
-  const { data, error } = await serverClient.http.GET(
-    "/v1/patients/{patientId}/ingest/executions/{executionId}",
-    { params: { path: { patientId, executionId } } },
+  document: CdaDocument,
+): Promise<Result<Ingestion>> {
+  const { data, error } = await serverClient.http.POST(
+    "/v1/patients/{patientId}/ingestions/cda/r2",
+    {
+      params: { path: { patientId } },
+      body: document.xml,
+      bodySerializer: (body: unknown) => (typeof body === "string" ? body : JSON.stringify(body)),
+      headers: { "Content-Type": "application/cda+xml" },
+    },
   );
   return toResult(data, error);
+}
+
+/**
+ * How many of a patient's submissions are in any of `status`.
+ *
+ * Reads `meta.total` off a one-item page: the list filters before it pages, so
+ * that total describes the filtered set rather than the table. Two of these —
+ * `pending,processing` for what is outstanding, then `failed` — answer whether a
+ * patient's data has settled and whether any of it was lost, at two requests
+ * whatever the submission count.
+ */
+export async function countIngestions(
+  patientId: string,
+  status: IngestionStatus[],
+): Promise<Result<number>> {
+  const { data, error } = await serverClient.http.GET("/v1/patients/{patientId}/ingestions", {
+    params: { path: { patientId }, query: { status, perPage: 1 } },
+  });
+  const result = toResult(data, error);
+  return result.ok ? ok(result.data.meta.total) : result;
 }
 
 /**

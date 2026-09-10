@@ -16,6 +16,13 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "25mb",
     },
+    // Next 16.3 defaults to running `typescript/bin/tsc` for the build-time
+    // type check. Our `typescript` dependency is aliased to the
+    // `@typescript/typescript6` preview, which ships no `bin/tsc` (only
+    // `bin/tsc6`), so the CLI-based check can't find it and the build fails.
+    // Fall back to the TypeScript-API-based check, which resolves the alias
+    // fine via `typescript/lib/typescript.js`.
+    useTypeScriptCli: false,
   },
 };
 

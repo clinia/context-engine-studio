@@ -6,6 +6,7 @@ import type {
   BrowseResult,
   IngestFhirBody,
   Ingestion,
+  IngestionList,
   IngestionStatus,
   Patient,
   PatientList,
@@ -141,24 +142,42 @@ export async function ingestCdaR2(
   return toResult(data, error);
 }
 
+/** Sort direction accepted by {@link listIngestions}. */
+export type IngestionOrder = "asc" | "desc";
+
 /**
- * How many of a patient's submissions are in any of `status`.
- *
- * Reads `meta.total` off a one-item page: the list filters before it pages, so
- * that total describes the filtered set rather than the table. Two of these —
- * `pending,processing` for what is outstanding, then `failed` — answer whether a
- * patient's data has settled and whether any of it was lost, at two requests
- * whatever the submission count.
+ * The query the ingestions list understands, minus `sort` — `receivedAt` is the
+ * only field the endpoint sorts on, so direction is the whole of the choice.
  */
-export async function countIngestions(
+export type IngestionQuery = {
+  /** Zero-indexed. */
+  page?: number;
+  perPage?: number;
+  order?: IngestionOrder;
+  /** Union, not intersection: a submission in any of these is returned. */
+  status?: IngestionStatus[];
+};
+
+/** A page of a patient's submissions, newest first unless `order` says otherwise. */
+export async function listIngestions(
   patientId: string,
-  status: IngestionStatus[],
-): Promise<Result<number>> {
+  query: IngestionQuery = {},
+): Promise<Result<IngestionList>> {
   const { data, error } = await serverClient.http.GET("/v1/patients/{patientId}/ingestions", {
-    params: { path: { patientId }, query: { status, perPage: 1 } },
+    params: {
+      path: { patientId },
+      query: {
+        page: query.page ?? 0,
+        perPage: query.perPage ?? 50,
+        sort: "receivedAt",
+        order: query.order ?? "desc",
+        // An empty array would be rejected by the endpoint's `minItems: 1`, and
+        // means the same thing as no filter at all.
+        ...(query.status?.length ? { status: query.status } : {}),
+      },
+    },
   });
-  const result = toResult(data, error);
-  return result.ok ? ok(result.data.meta.total) : result;
+  return toResult(data, error);
 }
 
 /**

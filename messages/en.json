@@ -83,9 +83,78 @@
       "unreadable": "{name} could not be read.",
       "invalidJson": "{name} is not valid JSON.",
       "notFhir": "{name} is not a FHIR resource — it has no resourceType.",
-      "fileTooLarge": "{name} is too large to upload in one request.",
-      "ingestionFailed": "Ingestion failed.",
-      "timedOut": "Timed out waiting for ingestion to finish."
+      "fileTooLarge": "{name} is too large to upload in one request."
+    }
+  },
+  "ingestions": {
+    "navLabel": "Ingestions",
+    "loading": "Loading ingestions…",
+    "empty": "No ingestions yet.",
+    "emptyFiltered": "No ingestions match this filter.",
+    "patientUnavailable": "This patient is no longer available.",
+    "resultCount": "{count, plural, one {# ingestion} other {# ingestions}}",
+    "refresh": "Refresh",
+    "autoRefresh": "Auto refresh",
+    "autoRefreshOff": "Off",
+    "filterAdd": "Filter",
+    "filterClear": "Clear filter",
+    "filterClearAll": "Clear all",
+    "filterReset": "Reset",
+    "columnStatus": "Status",
+    "columnSource": "Source",
+    "columnReceived": "Received",
+    "columnStaged": "Staged",
+    "columnDuration": "Duration",
+    "sortNewestFirst": "Sort newest first",
+    "sortOldestFirst": "Sort oldest first",
+    "sort": "Sort",
+    "pageOf": "Page {page} of {pages}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "closeDetail": "Close details",
+    "detailSource": "Source",
+    "detailMimeType": "Media type",
+    "detailReceived": "Received",
+    "detailStarted": "Started",
+    "detailCompleted": "Completed",
+    "detailStillRunning": "Still running",
+    "detailNotStarted": "Not started",
+    "detailDuration": "Duration",
+    "detailFailure": "Failure",
+    "detailStaged": "Staged",
+    "detailIntake": "Contents",
+    "detailIntakeMissing": "Not recorded for this submission.",
+    "detailIntakeUnit": "{unit} ({count})",
+    "detailIntakeEmpty": "Nothing was read from this submission.",
+    "startedTitle": "{count, plural, one {# file accepted} other {# files accepted}}",
+    "startedDescription": "Processing runs in the background. This patient's data appears as each submission lands.",
+    "startedAction": "View ingestions",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "succeeded": "Succeeded",
+      "partial": "Partial",
+      "failed": "Failed"
+    },
+    "staged": {
+      "facts": "Facts",
+      "events": "Events",
+      "narratives": "Narratives"
+    },
+    "intakeUnit": {
+      "resource": "Resources",
+      "section": "Sections",
+      "message": "Messages"
+    },
+    "intakeOutcome": {
+      "structured": "Structured",
+      "text_only": "Text only",
+      "ignored": "Ignored"
+    },
+    "intakeReason": {
+      "unsupported": "Unsupported",
+      "unusable": "Unusable",
+      "empty": "Empty"
     }
   }
 }

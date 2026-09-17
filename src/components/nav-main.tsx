@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 export function NavMain({
@@ -22,7 +24,7 @@ export function NavMain({
           <SidebarMenuButton
             isActive={item.isActive}
             onClick={item.onClick}
-            render={item.url ? <a href={item.url} /> : <button type="button" />}
+            render={item.url ? <Link href={item.url} /> : <button type="button" />}
           >
             {item.icon}
             <span>{item.title}</span>

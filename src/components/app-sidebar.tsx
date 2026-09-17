@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { NavChats } from "@/components/nav-chats";
 import { NavMain } from "@/components/nav-main";
@@ -11,28 +12,40 @@ import { PatientSwitcher } from "@/components/patient-switcher";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { usePatient } from "@/contexts/patient-provider";
 import { useVfsRoute } from "@/hooks/use-vfs-route";
-import { MessageAdd01Icon } from "@hugeicons/core-free-icons";
+import { InboxUploadIcon, MessageAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const t = useTranslations("ingestions");
   const { activePatient } = usePatient();
   const { selectedPath, selectFile } = useVfsRoute();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Each click starts a fresh chat — generated client-side now, mapping to a
   // engine session later. The id is minted on click (not at render) to avoid a
   // hydration mismatch from a server/client id divergence.
   const startChat = React.useCallback(() => {
-    const registryKey = activePatient?.registryKey;
-    if (!registryKey) return;
-    router.push(`/patients/${encodeURIComponent(registryKey)}/chat/${crypto.randomUUID()}`);
+    const patientId = activePatient?.registryKey;
+    if (!patientId) return;
+    router.push(`/patients/${encodeURIComponent(patientId)}/chat/${crypto.randomUUID()}`);
   }, [activePatient?.registryKey, router]);
+
+  const ingestionsUrl = activePatient
+    ? `/patients/${encodeURIComponent(activePatient.registryKey)}/ingestions`
+    : undefined;
 
   const navMain = [
     {
       title: "New chat",
       onClick: startChat,
       icon: <HugeiconsIcon icon={MessageAdd01Icon} strokeWidth={2} />,
+    },
+    {
+      title: t("navLabel"),
+      url: ingestionsUrl,
+      isActive: ingestionsUrl !== undefined && pathname === ingestionsUrl,
+      icon: <HugeiconsIcon icon={InboxUploadIcon} strokeWidth={2} />,
     },
   ];
 

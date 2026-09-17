@@ -28,6 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { patientLabel, usePatient } from "@/contexts/patient-provider";
+import { useIngestionStartedToast } from "@/hooks/use-ingestion-started-toast";
 import type { PatientListItem } from "@/lib/context-engine-client/actions";
 import { PatientIcon, PlusSignIcon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -56,9 +57,11 @@ export function PatientSwitcher() {
   const { isMobile } = useSidebar();
   const { patients, activePatient } = usePatient();
   const [createOpen, setCreateOpen] = React.useState(false);
+  const notifyIngestionStarted = useIngestionStartedToast();
 
-  const handleCreated = (patientId: string) => {
+  const handleCreated = (patientId: string, accepted: number) => {
     setCreateOpen(false);
+    notifyIngestionStarted(patientId, accepted);
     router.push(`/patients/${encodeURIComponent(patientId)}`);
   };
 

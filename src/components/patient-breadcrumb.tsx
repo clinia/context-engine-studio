@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 
 import {
@@ -13,11 +15,19 @@ import { patientLabel, usePatient } from "@/contexts/patient-provider";
 import { useVfsRoute } from "@/hooks/use-vfs-route";
 
 export function PatientBreadcrumb() {
+  const t = useTranslations("ingestions");
   const { activePatient } = usePatient();
   const { selectedPath, clearSelection } = useVfsRoute();
+  const pathname = usePathname();
 
   const label = activePatient ? patientLabel(activePatient) : "Select a patient";
-  const segments = selectedPath ? selectedPath.split("/").filter(Boolean) : [];
+  // The ingestions route is a page of its own rather than a file in the tree,
+  // so it names itself instead of splitting a VFS path.
+  const segments = pathname.endsWith("/ingestions")
+    ? [t("navLabel")]
+    : selectedPath
+      ? selectedPath.split("/").filter(Boolean)
+      : [];
 
   return (
     <BreadcrumbList>

@@ -4,10 +4,12 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { PatientIngestForm } from "@/components/patient-ingest-form";
+import { useIngestionStartedToast } from "@/hooks/use-ingestion-started-toast";
 
 export function PatientOnboarding() {
   const t = useTranslations("patientIngest");
   const router = useRouter();
+  const notifyIngestionStarted = useIngestionStartedToast();
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
@@ -17,7 +19,10 @@ export function PatientOnboarding() {
           <p className="text-muted-foreground text-sm">{t("onboardingDescription")}</p>
         </div>
         <PatientIngestForm
-          onSuccess={(patientId) => router.push(`/patients/${encodeURIComponent(patientId)}`)}
+          onSuccess={(patientId, accepted) => {
+            notifyIngestionStarted(patientId, accepted);
+            router.push(`/patients/${encodeURIComponent(patientId)}`);
+          }}
         />
       </div>
     </main>

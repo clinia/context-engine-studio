@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { NextIntlClientProvider } from "next-intl";
+
+import { Toaster, ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {/* At the root so a toast raised just before a navigation outlives it. */}
+          <ToastProvider>
+            {children}
+            <Toaster />
+          </ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -13,13 +13,8 @@ import {
 } from "@/lib/ingest/plan-submissions";
 import type { FileKind } from "@/lib/ingest/classify";
 import { droppedDirectoryName, readDroppedItems } from "@/lib/ingest/collect";
-import {
-  countIngestions,
-  ingestCdaR2,
-  ingestFhirR4,
-  upsertPatient,
-} from "@/lib/context-engine-client/actions";
-import { attempt, err, type Result } from "@/lib/result";
+import { ingestCdaR2, ingestFhirR4, upsertPatient } from "@/lib/context-engine-client/actions";
+import { attempt } from "@/lib/result";
 import {
   AlertCircleIcon,
   CloudUploadIcon,
@@ -34,18 +29,10 @@ const KIND_LABEL: Record<FileKind, string> = {
   unsupported: "Skipped",
 };
 
-const POLL_INTERVAL_MS = 2000;
-// An ingest ends with model calls over the whole record, so the wait scales with the
-// number of documents rather than with the upload. Five minutes reported a timeout on
-// records that went on to succeed.
-const POLL_TIMEOUT_MS = 10 * 60 * 1000;
-
 // One call carries one file, so this bounds a file rather than a batch. Kept under the
 // Server Action body-size limit configured in next.config.ts
 // (`serverActions.bodySizeLimit`), leaving margin for encoding.
 const MAX_SUBMISSION_BYTES = 20 * 1024 * 1024;
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Derives a patient id from the common top-level folder of a directory selection. */
 function folderNameFromInput(files: File[]): string | null {
@@ -55,10 +42,19 @@ function folderNameFromInput(files: File[]): string | null {
 
 /**
  * Patient creation + file ingest form. Self-contained (id input, dropzone, file
- * list, submit + polling); the caller decides what happens after a successful
- * ingest via {@link onSuccess}, which receives the created patient's id.
+ * list, submit); the caller decides what happens once every file is accepted
+ * via {@link onSuccess}, which receives the created patient's id and how many
+ * submissions it took.
+ *
+ * Acceptance is where the form's job ends. What each submission then goes on to
+ * do is the ingestions view's subject, and waiting for it here would hold the
+ * form open for as long as the record takes to process.
  */
-export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string) => void }) {
+export function PatientIngestForm({
+  onSuccess,
+}: {
+  onSuccess: (patientId: string, accepted: number) => void;
+}) {
   const t = useTranslations("patientIngest");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [patientId, setPatientId] = React.useState("");
@@ -113,25 +109,6 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
     }
   };
 
-  /**
-   * Blocks until this patient has nothing outstanding, then answers how many of its
-   * submissions failed outright.
-   *
-   * Polls the list rather than each receipt: `?status=pending,processing` is the
-   * outstanding set and its total is the count, so a wait costs one request per
-   * interval however many files were sent.
-   */
-  const waitForSettled = async (id: string): Promise<Result<number>> => {
-    const deadline = Date.now() + POLL_TIMEOUT_MS;
-    while (Date.now() < deadline) {
-      await sleep(POLL_INTERVAL_MS);
-      const outstanding = await attempt(countIngestions(id, ["pending", "processing"]));
-      if (!outstanding.ok) return outstanding;
-      if (outstanding.data === 0) return attempt(countIngestions(id, ["failed"]));
-    }
-    return err(t("errors.timedOut"));
-  };
-
   const submit = async () => {
     const id = patientId.trim();
     if (!id || submittable === 0) return;
@@ -152,11 +129,6 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
     const upserted = await attempt(upsertPatient(id));
     if (!upserted.ok) return fail(upserted.error);
 
-    // What this patient had already lost, so the count after settling reflects only
-    // what this submission run sent.
-    const failedBefore = await attempt(countIngestions(id, ["failed"]));
-    if (!failedBefore.ok) return fail(failedBefore.error);
-
     const submissions = planned.data;
     for (let index = 0; index < submissions.length; index++) {
       setProgress({ current: index + 1, total: submissions.length });
@@ -170,17 +142,7 @@ export function PatientIngestForm({ onSuccess }: { onSuccess: (patientId: string
       if (!accepted.ok) return fail(accepted.error);
     }
 
-    const failedAfter = await waitForSettled(id);
-    if (!failedAfter.ok) return fail(failedAfter.error);
-
-    // Only a total loss keeps the user here. Anything that landed is worth opening the
-    // patient for — including a `partial` submission, which is content stored with one
-    // lane degraded rather than a failure.
-    if (failedAfter.data - failedBefore.data >= submissions.length) {
-      return fail(t("errors.ingestionFailed"));
-    }
-
-    onSuccess(id);
+    onSuccess(id, submissions.length);
   };
 
   const canSubmit = patientId.trim().length > 0 && submittable > 0 && !isIngesting;

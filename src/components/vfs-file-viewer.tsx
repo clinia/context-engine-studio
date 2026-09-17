@@ -36,17 +36,17 @@ export function VfsFileViewer() {
   const { activePatient } = usePatient();
   const { selectedPath, format, setFormat } = useVfsRoute();
   const t = useTranslations("vfsViewer");
-  const registryKey = activePatient?.registryKey ?? null;
+  const patientId = activePatient?.registryKey ?? null;
 
   const [state, setState] = React.useState<ContentState>({ status: "loading" });
 
   React.useEffect(() => {
-    if (!registryKey || !selectedPath) return;
+    if (!patientId || !selectedPath) return;
     let cancelled = false;
     setState({ status: "loading" });
 
     void (async () => {
-      const res = await readVfs(registryKey, selectedPath, format);
+      const res = await readVfs(patientId, selectedPath, format);
       if (cancelled) return;
       if (res.ok) setState({ status: "loaded", content: res.data.content });
       else setState({ status: "error", error: res.error });
@@ -55,7 +55,7 @@ export function VfsFileViewer() {
     return () => {
       cancelled = true;
     };
-  }, [registryKey, selectedPath, format]);
+  }, [patientId, selectedPath, format]);
 
   if (!selectedPath) {
     return (

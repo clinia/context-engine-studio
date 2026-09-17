@@ -158,7 +158,7 @@ export function NavVfs({
 }) {
   const { activePatient } = usePatient();
   const t = useTranslations("navVfs");
-  const registryKey = activePatient?.registryKey ?? null;
+  const patientId = activePatient?.registryKey ?? null;
 
   const [root, setRoot] = React.useState<RootState>({ status: "loading" });
   const [dirs, setDirs] = React.useState<Map<string, DirState>>(new Map());
@@ -176,11 +176,11 @@ export function NavVfs({
 
   const expandDir = React.useCallback(
     async (path: string) => {
-      if (!registryKey || requested.current.has(path)) return;
+      if (!patientId || requested.current.has(path)) return;
       requested.current.add(path);
       setDirs((prev) => new Map(prev).set(path, { status: "loading" }));
 
-      const res = await browseVfs(registryKey, path);
+      const res = await browseVfs(patientId, path);
       setDirs((prev) => {
         const next = new Map(prev);
         if (res.ok && res.data.type === "directory") {
@@ -192,17 +192,17 @@ export function NavVfs({
         return next;
       });
     },
-    [registryKey],
+    [patientId],
   );
 
   // Load the root on mount. NavVfs is keyed by patient in the sidebar, so
   // switching patients remounts this component with fresh state.
   React.useEffect(() => {
-    if (!registryKey) return;
+    if (!patientId) return;
     let cancelled = false;
 
     void (async () => {
-      const res = await browseVfs(registryKey);
+      const res = await browseVfs(patientId);
       if (cancelled) return;
       if (res.ok && res.data.type === "directory") {
         setRoot({
@@ -218,7 +218,7 @@ export function NavVfs({
     return () => {
       cancelled = true;
     };
-  }, [registryKey]);
+  }, [patientId]);
 
   // Reveal the selected file on load / when it changes: open each ancestor
   // directory and fetch its children so the lazy tree expands down to the leaf
@@ -247,7 +247,7 @@ export function NavVfs({
     [dirs, expandDir, openDirs, setOpen, selectedPath, onSelectFile],
   );
 
-  if (!registryKey) return null;
+  if (!patientId) return null;
 
   return (
     <SidebarGroup>

@@ -41,7 +41,7 @@ export function NavChats() {
   const { activePatient } = usePatient();
   const t = useTranslations("navChats");
   const params = useParams<{ id?: string }>();
-  const registryKey = activePatient?.registryKey ?? null;
+  const patientId = activePatient?.registryKey ?? null;
   const currentId = params?.id;
 
   const [state, setState] = React.useState<ChatsState>({ status: "loading" });
@@ -53,11 +53,11 @@ export function NavChats() {
   React.useEffect(() => onChatsChanged(() => setReloadKey((key) => key + 1)), []);
 
   React.useEffect(() => {
-    if (!registryKey) return;
+    if (!patientId) return;
     let cancelled = false;
 
     void (async () => {
-      const res = await listChats(registryKey);
+      const res = await listChats(patientId);
       if (cancelled) return;
       setState(res.ok ? { status: "loaded", chats: res.data } : { status: "error" });
     })();
@@ -67,9 +67,9 @@ export function NavChats() {
     };
     // Also refetch when the open chat changes (keeps the active row correct) and
     // when a save event bumps reloadKey.
-  }, [registryKey, currentId, reloadKey]);
+  }, [patientId, currentId, reloadKey]);
 
-  if (!registryKey) return null;
+  if (!patientId) return null;
 
   return (
     <SidebarGroup>
@@ -95,7 +95,7 @@ export function NavChats() {
                   title={chat.title}
                   render={
                     <Link
-                      href={`/patients/${encodeURIComponent(registryKey)}/chat/${chat.sessionId}`}
+                      href={`/patients/${encodeURIComponent(patientId)}/chat/${chat.sessionId}`}
                     />
                   }
                 >

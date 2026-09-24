@@ -17,7 +17,10 @@ import type {
 /** Output format for {@link readVfs}; mirrors the `format` query of the read endpoint. */
 export type VfsFormat = "narrative" | "structured" | "compact";
 
-export type PatientListItem = PatientList[number];
+export type PatientListItem = PatientList["data"][number];
+
+/** `perPage` ceiling the patient listing enforces. */
+const MAX_PATIENTS_PER_PAGE = 1000;
 
 /** Wraps an openapi-fetch `{ data, error }` response into a {@link Result}. */
 function toResult<T>(data: T | undefined, error: unknown): Result<T> {
@@ -29,12 +32,14 @@ function toResult<T>(data: T | undefined, error: unknown): Result<T> {
 /**
  * Loads the patients currently registered in the Context Engine API.
  *
- * The `GET /v1/patients` endpoint returns the full list in a single response
- * (no pagination), so this is the complete set of patients.
+ * The patient switcher shows every patient at once, so this asks for the largest
+ * page the endpoint allows rather than paging
  */
 export async function listPatients(): Promise<PatientListItem[]> {
-  const { data } = await serverClient.http.GET("/v1/patients", {});
-  return data ?? [];
+  const { data } = await serverClient.http.GET("/v1/patients", {
+    params: { query: { page: 0, perPage: MAX_PATIENTS_PER_PAGE } },
+  });
+  return data?.data ?? [];
 }
 
 /**

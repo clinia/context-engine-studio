@@ -107,7 +107,9 @@ export function IngestionDetailPanel({
             {ingestion.completedAt ? (
               formatAbsolute(ingestion.completedAt)
             ) : (
-              <span className="text-muted-foreground">{t("detailStillRunning")}</span>
+              <span className="text-muted-foreground">
+                {ingestion.startedAt ? t("detailStillRunning") : "—"}
+              </span>
             )}
           </Field>
           {duration && <Field label={t("detailDuration")}>{duration}</Field>}

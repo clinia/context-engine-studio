@@ -12,11 +12,12 @@ import { PatientSwitcher } from "@/components/patient-switcher";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { usePatient } from "@/contexts/patient-provider";
 import { useVfsRoute } from "@/hooks/use-vfs-route";
-import { InboxUploadIcon, MessageAdd01Icon } from "@hugeicons/core-free-icons";
+import { GitMergeIcon, InboxUploadIcon, MessageAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("ingestions");
+  const tResolution = useTranslations("resolution");
   const { activePatient } = usePatient();
   const { selectedPath, selectFile } = useVfsRoute();
   const router = useRouter();
@@ -31,9 +32,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     router.push(`/patients/${encodeURIComponent(patientId)}/chat/${crypto.randomUUID()}`);
   }, [activePatient?.registryKey, router]);
 
-  const ingestionsUrl = activePatient
-    ? `/patients/${encodeURIComponent(activePatient.registryKey)}/ingestions`
+  const patientPath = activePatient
+    ? `/patients/${encodeURIComponent(activePatient.registryKey)}`
     : undefined;
+  const ingestionsUrl = patientPath && `${patientPath}/ingestions`;
+  const resolutionUrl = patientPath && `${patientPath}/resolution`;
 
   const navMain = [
     {
@@ -46,6 +49,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: ingestionsUrl,
       isActive: ingestionsUrl !== undefined && pathname === ingestionsUrl,
       icon: <HugeiconsIcon icon={InboxUploadIcon} strokeWidth={2} />,
+    },
+    {
+      title: tResolution("navLabel"),
+      url: resolutionUrl,
+      isActive: resolutionUrl !== undefined && pathname === resolutionUrl,
+      icon: <HugeiconsIcon icon={GitMergeIcon} strokeWidth={2} />,
     },
   ];
 

@@ -16,15 +16,20 @@ import { useVfsRoute } from "@/hooks/use-vfs-route";
 
 export function PatientBreadcrumb() {
   const t = useTranslations("ingestions");
+  const tResolution = useTranslations("resolution");
   const { activePatient } = usePatient();
   const { selectedPath, clearSelection } = useVfsRoute();
   const pathname = usePathname();
 
   const label = activePatient ? patientLabel(activePatient) : "Select a patient";
-  // The ingestions route is a page of its own rather than a file in the tree,
-  // so it names itself instead of splitting a VFS path.
-  const segments = pathname.endsWith("/ingestions")
-    ? [t("navLabel")]
+  // Pages outside the VFS tree carry their own label.
+  const pageLabel = pathname.endsWith("/ingestions")
+    ? t("navLabel")
+    : pathname.endsWith("/resolution")
+      ? tResolution("navLabel")
+      : null;
+  const segments = pageLabel
+    ? [pageLabel]
     : selectedPath
       ? selectedPath.split("/").filter(Boolean)
       : [];

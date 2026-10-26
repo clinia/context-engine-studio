@@ -26,7 +26,9 @@ export default async function PatientLayout({
         <Suspense>
           <AppSidebar />
         </Suspense>
-        <SidebarInset>{children}</SidebarInset>
+        {/* min-w-0: without it a wide table's minimum width grows the page past the viewport
+            instead of scrolling inside its own pane. */}
+        <SidebarInset className="min-w-0">{children}</SidebarInset>
       </SidebarProvider>
     </PatientProvider>
   );

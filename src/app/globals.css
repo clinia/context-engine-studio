@@ -1,1 +1,25 @@
 @import "@clinia/tailwindcss";
+
+/*
+ * Resolution view, on Tailwind's hues (the brand palette is near-monochrome):
+ * - step: the cascade's checks, yellow-green (exact) through blue to magenta (judged by a model)
+ * - match / match-partial / mismatch: field agreement
+ * - level: verdict strength, green / amber / rose for confirmed / probable / uncertain
+ * - caution: a fact that leans mostly on model checks
+ */
+@theme inline {
+  --color-step-source: var(--color-lime-700);
+  --color-step-identity: var(--color-green-600);
+  --color-step-code: var(--color-teal-600);
+  --color-step-wording: var(--color-sky-600);
+  --color-step-meaning: var(--color-indigo-500);
+  --color-step-model: var(--color-fuchsia-600);
+  --color-on-step: var(--color-white);
+  --color-match: var(--color-emerald-500);
+  --color-match-partial: var(--color-amber-400);
+  --color-mismatch: var(--color-rose-500);
+  --color-level-confirmed: var(--color-emerald-500);
+  --color-level-probable: var(--color-amber-500);
+  --color-level-uncertain: var(--color-rose-500);
+  --color-caution: var(--color-amber-500);
+}

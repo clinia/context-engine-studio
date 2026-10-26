@@ -12,11 +12,9 @@ import { Composer } from "@/components/chat/composer";
 import { ToolInspectorProvider } from "@/components/chat/tool-inspector";
 import { NavActions } from "@/components/nav-actions";
 import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
 import { saveChat } from "@/lib/chat/actions";
 import { emitChatsChanged } from "@/lib/chat/events";
 import type { ChatUIMessage } from "@/lib/chat-types";
-import { generateMemories } from "@/lib/context-engine-client/actions";
 
 type ChatPanelProps = {
   /** Patient that scopes the chat endpoint and the MCP tools. */
@@ -91,25 +89,6 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     }
   }, [status, messages, patientId, sessionId]);
 
-  // On-demand memory generation for the current session (backend job over the
-  // transcript persisted by the chat route). Kept explicit — the backend
-  // re-extracts the whole transcript each call, so it shouldn't run every turn.
-  const [memoryStatus, setMemoryStatus] = React.useState<"idle" | "pending" | "done" | "error">(
-    "idle",
-  );
-  const handleGenerateMemories = React.useCallback(async () => {
-    setMemoryStatus("pending");
-    const result = await generateMemories(patientId, sessionId);
-    setMemoryStatus(result.ok ? "done" : "error");
-  }, [patientId, sessionId]);
-
-  const memoryLabel = {
-    idle: t("generateMemories"),
-    pending: t("generatingMemories"),
-    done: t("memoriesGenerated"),
-    error: t("memoriesFailed"),
-  }[memoryStatus];
-
   const totalTokens = messages.reduce(
     (sum, message) => sum + (message.metadata?.totalTokens ?? 0),
     0,
@@ -136,10 +115,6 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     const text = input.trim();
     if (!text || isBusy) return;
     setInput("");
-    // A new message changes the transcript, so any prior memory-generation result
-    // is now stale — reset the affordance so the user can regenerate over the new
-    // content (leave an in-flight run alone; it'll settle to its own terminal state).
-    setMemoryStatus((prev) => (prev === "pending" ? prev : "idle"));
     void sendMessage({ text });
   };
 
@@ -158,15 +133,7 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
           actions={
             <>
               {stats}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void handleGenerateMemories()}
-                disabled={memoryStatus === "pending" || messages.length === 0}
-              >
-                <HugeiconsIcon icon={SparklesIcon} />
-                {memoryLabel}
-              </Button>
+
               <NavActions />
             </>
           }

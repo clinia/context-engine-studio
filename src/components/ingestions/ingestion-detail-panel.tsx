@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 
-import { formatAbsolute, formatDuration, formatRelative } from "@/components/ingestions/format";
+import { formatDuration } from "@/components/ingestions/format";
+import { formatAbsolute, formatRelative } from "@/lib/format-date";
 import { IngestionStatusBadge } from "@/components/ingestions/ingestion-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

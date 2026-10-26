@@ -1,6 +1,6 @@
 # Clinia Context Engine Studio
 
-An open-source app you clone and run locally to explore your own [Clinia Context Engine](https://docs.clinia.com/docs/introduction) workspace through an interface: ingest patient records, browse what the engine made of them, and chat with a sample agent grounded in the result.
+An open-source app you clone and run locally to explore your own [Clinia Context Engine](https://docs.clinia.com/docs/get-started/introduction) workspace through an interface: ingest patient records, browse what the engine made of them, and chat with a sample agent grounded in the result.
 
 It's a free developer tool. Everything Studio does is already available through the Context Engine API — Studio means you don't have to build an interface first to see any of it. It doubles as the reference implementation for wiring your own app to a workspace: the REST calls, the agent, and the MCP surface are all here to read and copy.
 
@@ -22,13 +22,13 @@ Studio is a local starting point and a tool for poking at your own data. It is n
 
 ## Prerequisites
 
-| What                                          | Why                                                                                                                                                                                      |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Node.js 20.9+**                             | Required by Next.js 16. `.nvmrc` pins 24, which is what Studio is built and tested on.                                                                                                   |
-| **pnpm 10+**                                  | The `packageManager` field pins the exact version; `corepack enable` will honour it.                                                                                                     |
-| **A Clinia workspace**                        | Where your patient data actually lives. Created in the [Clinia Console](https://console.clinia.cloud).                                                                                   |
-| **Workspace OAuth credentials, Read & Write** | Studio ingests data and creates patients, so read-only credentials will fail on those actions. See [Manage Credentials](https://docs.clinia.com/docs/console-guides/manage-credentials). |
-| **An Anthropic API key**                      | The chat assistant calls Claude directly from Studio's server. Needs access to `claude-opus-4-8`.                                                                                        |
+| What                                          | Why                                                                                                                                                                                                        |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Node.js 20.9+**                             | Required by Next.js 16. `.nvmrc` pins 24, which is what Studio is built and tested on.                                                                                                                     |
+| **pnpm 10+**                                  | The `packageManager` field pins the exact version; `corepack enable` will honour it.                                                                                                                       |
+| **A Clinia workspace**                        | Where your patient data actually lives. Created in the [Clinia Console](https://console.clinia.cloud).                                                                                                     |
+| **Workspace OAuth credentials, Read & Write** | Studio ingests data and creates patients, so read-only credentials will fail on those actions. See [Authentication and Credentials](https://docs.clinia.com/docs/platform/authentication-and-credentials). |
+| **An Anthropic API key**                      | The chat assistant calls Claude directly from Studio's server. Needs access to `claude-opus-4-8`.                                                                                                          |
 
 ## Quickstart
 
@@ -87,7 +87,7 @@ If you don't have a de-identified record to hand, use **Jeanne Tremblay** — a 
 
 Unzip it and drop the folder onto the onboarding dropzone.
 
-**Provenance.** This dataset is entirely synthetic. It describes no real person and contains no protected health information; every name, identifier, date, and clinical event in it was generated. See the [Synthetic Patient Dataset](https://docs.clinia.com/docs/workspace-guides/synthetic-patient) documentation for the full contents and timeline.
+**Provenance.** This dataset is entirely synthetic. It describes no real person and contains no protected health information; every name, identifier, date, and clinical event in it was generated. See the [Synthetic Patient Dataset](https://docs.clinia.com/docs/patients/synthetic-patient) documentation for the full contents and timeline.
 
 ## Getting help
 

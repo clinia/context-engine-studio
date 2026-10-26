@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 
-import { formatAbsolute, formatDuration, formatRelative } from "@/components/ingestions/format";
+import { formatDuration } from "@/components/ingestions/format";
+import { formatAbsolute, formatRelative } from "@/lib/format-date";
 import { IngestionStatusBadge } from "@/components/ingestions/ingestion-status-badge";
 import { ColumnHeader } from "@/components/table-filter/column-header";
 import type { FilterDefinition, SortDefinition } from "@/components/table-filter/definitions";

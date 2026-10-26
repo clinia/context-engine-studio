@@ -6,11 +6,11 @@ import { VfsFileViewer } from "@/components/vfs-file-viewer";
 
 export default function PatientPage() {
   return (
-    <>
+    <div className="flex h-svh min-h-0 flex-col">
       <PageHeader actions={<NavActions />} />
       <Suspense>
         <VfsFileViewer />
       </Suspense>
-    </>
+    </div>
   );
 }

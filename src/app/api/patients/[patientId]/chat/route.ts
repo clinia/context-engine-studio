@@ -1,5 +1,6 @@
 import type { ChatMessageMetadata, ChatUIMessage } from "@/lib/chat-types";
-import { appendMessages, upsertSession } from "@/lib/context-engine-client/actions";
+import { toSession } from "@/lib/chat/session";
+import { ingestSession } from "@/lib/context-engine-client/actions";
 import {
   openContextEngineMcp,
   type ContextEngineMcpSession,
@@ -13,18 +14,7 @@ import {
   createUIMessageStreamResponse,
   stepCountIs,
   streamText,
-  type UIMessage,
 } from "ai";
-
-/** Flattens a UI message's text parts into a single string (ignores tool/reasoning parts). */
-function uiMessageText(message: UIMessage | undefined): string {
-  if (!message) return "";
-  return message.parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("\n")
-    .trim();
-}
 
 /** Long-running tool loops can take a while; give the handler generous headroom. */
 export const maxDuration = 120;
@@ -39,40 +29,33 @@ const FALLBACK_SYSTEM_PROMPT =
  * Patient-scoped chat endpoint: `POST /api/patients/{patientId}/chat`.
  *
  * `patientId` comes from the route; the body carries the AI SDK `messages` and
- * the `sessionId` (the chat id, which will map to an engine session). It opens an
- * ephemeral engine MCP connection for the request, streams a tool-using Claude
- * response, and closes the MCP connection once the model is done.
+ * the `sessionId` (the chat id, which is the engine session the tool calls are recorded
+ * on). It opens an ephemeral engine MCP connection for the request, streams a
+ * tool-using Claude response, and closes the MCP connection once the model is done.
+ * The conversation is imported as that session twice per turn — up to the new user
+ * message before the model runs, then with the reply once it completes — which is what
+ * forms the patient's memories from it.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ patientId: string }> }) {
   const { patientId: rawPatientId } = await params;
   const patientId = decodeURIComponent(rawPatientId);
   const { messages, sessionId } = (await req.json()) as {
-    messages: UIMessage[];
+    messages: ChatUIMessage[];
     sessionId?: string;
   };
 
-  // Open (idempotently) the engine session before any tool call, so the server has
-  // a row to record this chat's transcript against, then persist the new user
-  // message. Best-effort via `attempt`: like the MCP connection below, a failure
-  // here shouldn't block the chat — it just won't be persisted.
-  if (sessionId) {
-    await attempt(upsertSession(patientId, sessionId));
-    const userText = uiMessageText(messages.at(-1));
-    if (userText) {
-      await attempt(appendMessages(patientId, sessionId, [{ role: "user", content: userText }]));
-    }
-  }
-
   // Connect to the engine MCP for this request. If it's unreachable, degrade
   // gracefully to a tool-less chat rather than failing the whole request.
-  let mcp: ContextEngineMcpSession | null = null;
-  let tools: ContextEngineMcpTools = {};
-  try {
-    mcp = await openContextEngineMcp({ patientId, sessionId });
-    tools = mcp.tools;
-  } catch {
-    mcp = null;
-  }
+  // Alongside, import the conversation up to the new user message: a session orders by
+  // write position, and each tool call is recorded on the session as it runs, so the user
+  // message must be stored first to sit before the tool calls it prompts.
+  const [mcp] = await Promise.all([
+    openContextEngineMcp({ patientId, sessionId }).catch(
+      (): ContextEngineMcpSession | null => null,
+    ),
+    sessionId ? attempt(ingestSession(patientId, sessionId, toSession(messages))) : null,
+  ]);
+  const tools: ContextEngineMcpTools = mcp?.tools ?? {};
 
   const result = streamText({
     model: anthropic("claude-opus-4-8"),
@@ -83,14 +66,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ patient
     providerOptions: {
       anthropic: { thinking: { type: "adaptive" } },
     },
-    onFinish: async (event) => {
-      // Persist the assistant's reply (aggregated text across tool steps) so the
-      // stored transcript reflects the full turn. Best-effort.
-      if (sessionId && event.text) {
-        await attempt(
-          appendMessages(patientId, sessionId, [{ role: "assistant", content: event.text }]),
-        );
-      }
+    onFinish: () => {
       void mcp?.close();
     },
     onAbort: () => {
@@ -106,6 +82,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ patient
   // metadata (the i-th step lines up with the i-th `step-start` part client-side).
   const steps: ChatMessageMetadata["steps"] = [];
   const stream = createUIMessageStream<ChatUIMessage>({
+    // Given, so `onEnd` sees the conversation with this turn's reply appended.
+    originalMessages: messages,
+    // Import after every completed turn: turns the session already holds are recognised and
+    // not stored again, so this import adds only the reply. Built from the same UI
+    // messages the next request resends, so the stored turns always match what comes back.
+    // Best-effort — a failed import costs this turn's memories, never the reply.
+    onEnd: async ({ messages: conversation, isAborted }) => {
+      if (!sessionId || isAborted) return;
+      await attempt(ingestSession(patientId, sessionId, toSession(conversation)));
+    },
     execute: ({ writer }) => {
       writer.merge(
         result.toUIMessageStream<ChatUIMessage>({

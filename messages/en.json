@@ -18,11 +18,7 @@
     "inputLabel": "Input",
     "outputLabel": "Output",
     "done": "done",
-    "failed": "failed",
-    "generateMemories": "Generate memories",
-    "generatingMemories": "Generating…",
-    "memoriesGenerated": "Memories generated",
-    "memoriesFailed": "Generation failed"
+    "failed": "failed"
   },
   "navVfs": {
     "label": "Virtual file system",
@@ -42,7 +38,8 @@
     "loadError": "Failed to load file",
     "tabNarrative": "Narrative",
     "tabCompact": "Compact",
-    "tabStructured": "Structured"
+    "tabStructured": "Structured",
+    "openResolution": "Resolution"
   },
   "navActions": {
     "deletePatient": "Delete patient",
@@ -155,6 +152,229 @@
       "unsupported": "Unsupported",
       "unusable": "Unusable",
       "empty": "Empty"
+    }
+  },
+  "resolution": {
+    "navLabel": "Resolution",
+    "loading": "Loading…",
+    "resizePanel": "Resize panel",
+    "closeDetail": "Close details",
+    "impact": {
+      "extracted": "Extracted",
+      "extractedHint": "Records extracted from submitted documents, before resolution.",
+      "facts": "Facts",
+      "factsHint": "Distinct facts resolution settled on.",
+      "collapse": "Collapse",
+      "collapseHint": "Share of extracted records that were folded into another.",
+      "merges": "Merges",
+      "mergesHint": "Pairs decided to be the same thing. A fact of three records is two merges.",
+      "rejects": "Kept apart",
+      "rejectsHint": "Pairs decided to be different. A floor, not a total: one resolution pass stores at most 1000 of these and keeps counting the rest without storing them."
+    },
+    "columnFact": "Fact",
+    "columnType": "Type",
+    "columnMembers": "Records",
+    "emptyFacts": "Nothing has been resolved for this patient yet.",
+    "factNotFound": "Could not open the linked fact.",
+    "pageOf": "Page {page} of {pages}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "headlineSingle": "one record, nothing merged",
+    "headlineMerged": "{count} records merged into one fact",
+    "recordsError": "Could not read this fact's records, so they are shown by id. {error}",
+    "showRecords": "Show records",
+    "sourceUnknown": "Source not loaded",
+    "detailNoDecisions": "No pair was ever compared — this fact came from one record and absorbed nothing.",
+    "detailNoDecisionsFound": "No recorded decision connects these records. They were grouped before the decision ledger covered them.",
+    "detailDecisionsTruncated": "Partial: only the first {count} records were probed for decisions.",
+    "groupPairs": "{count, plural, one {# pair} other {# pairs}}",
+    "groupRecords": "{count, plural, one {# record} other {# records}}",
+    "groupSamples": "Show {count, plural, one {# example} other {# examples}}",
+    "sampleOtherEvidence": "{count, plural, one {# other layer} other {# other layers}}",
+    "conflictKept": "Kept",
+    "level": {
+      "confirmed": "Confirmed",
+      "probable": "Probable",
+      "uncertain": "Uncertain"
+    },
+    "levelCount": {
+      "confirmed": "{count} confirmed",
+      "probable": "{count} probable",
+      "uncertain": "{count} uncertain"
+    },
+    "levelHint": {
+      "confirmed": "Strong: an exact check, or at least 90% confident in the verdict.",
+      "probable": "Likely: 50–90% confident in the verdict, or a code mismatch.",
+      "uncertain": "Weak: under 50% confident in the verdict."
+    },
+    "reasoning": {
+      "title": "Why these are one fact",
+      "step": {
+        "source": "Source",
+        "identity": "Identity",
+        "code": "Same code",
+        "wording": "Wording",
+        "meaning": "Meaning",
+        "model": "Model"
+      },
+      "stepJoined": {
+        "source": "the same source",
+        "identity": "the same ingredients and route",
+        "code": "the same code",
+        "wording": "wording",
+        "meaning": "meaning",
+        "model": "{count, plural, one {a model check} other {# model checks}}",
+        "other": "{count, plural, one {another check} other {# other checks}}"
+      },
+      "stepExact": {
+        "source": "the same source",
+        "identity": "the same ingredients and route",
+        "code": "matching codes",
+        "codeRelated": "the same or related codes",
+        "codeShared": "code <mono>{code}</mono>"
+      },
+      "scaleExact": "exact",
+      "scaleJudged": "judged",
+      "eachMatches": "Each of the {count} records matches another one in this fact.",
+      "allExact": "{count, plural, =2 {The two records} other {The # records}} match on <exact></exact>.",
+      "everyExact": "Every match is exact, on <exact></exact>.",
+      "someExact": "{exactCount, plural, one {# match is} other {# matches are}} exact, on <exact></exact>. {judged, plural, one {The other one rests} other {The other # rest}} on {checks}.",
+      "noneExact": "No match is exact. They rest on {checks}.",
+      "modelHeavy": "Most matches rest on a model check, so review them before relying on this fact.",
+      "pairJudged": "The two records match on {checks}.",
+      "pairModel": "Review it before relying on this fact.",
+      "countedOnce": "each record counted once, at its strongest match",
+      "unlinked": "{count, plural, one {# record has} other {# records have}} no recorded match with the rest.",
+      "weakestTitle": "Weakest link",
+      "joinedModel": "Joined on a model check",
+      "joinedModelScore": "Joined on a model check, {score} confident",
+      "joinedMeaning": "Joined on meaning",
+      "joinedMeaningScore": "Joined on meaning, descriptions {score} similar",
+      "joinedWording": "Joined on wording once normalized",
+      "disagreeTitle": "Where the records disagree · {count, plural, one {# field} other {# fields}}",
+      "over": "over {value}",
+      "overMany": "over {count} other values",
+      "agreeCount": "{agree} of {total}",
+      "moreTitle": "More detail",
+      "records": "{records, plural, one {# record} other {# records}} from {sources, plural, one {# source} other {# sources}}",
+      "everyPair": "Every pair decision",
+      "linksTitle": "How each record joined",
+      "linksMeta": "{count, plural, one {# link} other {# links}}",
+      "firstRecord": "First record",
+      "noLink": "No recorded link",
+      "stepGroup": {
+        "source": "Same source record",
+        "identity": "Same ingredients and route",
+        "code": "Same code",
+        "wording": "Wording, once normalized",
+        "meaning": "Close in meaning",
+        "model": "Model judged the same"
+      },
+      "stepGroupOther": "Other rule",
+      "withRecord": "with #{n}",
+      "phraseSource": "cites the same source record",
+      "phraseHierarchical": "both under {ancestor}",
+      "phraseConcept": "same clinical concept",
+      "phraseWording": "fields {score} similar on average",
+      "phraseMeaning": "descriptions {score} similar",
+      "phraseModel": "{score} confident",
+      "trail": {
+        "passed": "passed on",
+        "decided": "merged here",
+        "skipped": "did not apply"
+      },
+      "fieldsTitle": "Fields × checks",
+      "fieldsNote": "Only wording and the model read fields one by one. Source, identity, code and meaning compare whole records.",
+      "fieldsNone": "No check compared these records field by field.",
+      "columnField": "Field",
+      "columnKept": "On the fact",
+      "cellMissing": "blank on one side",
+      "legendSame": "same",
+      "legendPartly": "partly",
+      "legendDifferent": "different"
+    },
+    "evidence": {
+      "none": "No evidence was recorded for this decision.",
+      "sourceRef": "Both records cite the same source record.",
+      "exactCode": "same code on both",
+      "hierarchicalCode": "related under",
+      "codeMismatch": "different codes",
+      "conceptIdentity": {
+        "concept-identity-match": "same concepts, by {rung}",
+        "concept-identity-partial-match": "concepts overlap, by {rung}",
+        "concept-identity-mismatch": "different concepts, by {rung}"
+      },
+      "identity": {
+        "medication-identity-match": "same ingredients and route",
+        "medication-identity-mismatch": "different ingredients or route",
+        "medication-identity-incomplete": "identity incomplete, missing ingredient or route"
+      },
+      "identityLine": "{ingredients} · {route}",
+      "routeOther": "other ({forms})",
+      "route": {
+        "oral": "oral",
+        "rectal": "rectal",
+        "sublingual": "sublingual",
+        "buccal": "buccal",
+        "nasogastric": "nasogastric",
+        "intramuscular": "intramuscular",
+        "intravenous": "intravenous",
+        "subcutaneous": "subcutaneous",
+        "intradermal": "intradermal",
+        "intrathecal": "intrathecal",
+        "intraperitoneal": "intraperitoneal",
+        "intra-articular": "intra-articular",
+        "intraosseous": "intraosseous",
+        "hemodialysis": "hemodialysis",
+        "urethral": "urethral",
+        "intrauterine": "intrauterine",
+        "intraocular": "intraocular",
+        "intravesical": "intravesical",
+        "topical": "topical",
+        "transdermal": "transdermal",
+        "ophthalmic": "ophthalmic",
+        "otic": "otic",
+        "nasal": "nasal",
+        "vaginal": "vaginal",
+        "inhalation": "inhalation",
+        "nebulization": "nebulization",
+        "other": "other"
+      },
+      "fieldSimilarity": "{field} {score}",
+      "semanticSimilarity": "Descriptions {score} similar in meaning.",
+      "llmMatch": "Same thing",
+      "llmNoMatch": "Different things",
+      "llmConfidence": "{score} confident",
+      "llmCanonical": {
+        "a": "kept the first record",
+        "b": "kept the second record",
+        "merged": "merged field by field"
+      },
+      "viaStrategy": "via {strategy}",
+      "showReasoning": "Show the full reasoning"
+    },
+    "rule": {
+      "source-ref-equality": "Both records cite the same source record.",
+      "medication-identity-match": "Both medications have the same ingredients and route.",
+      "medication-identity-mismatch": "The medications differ in their ingredients or route.",
+      "medication-identity-incomplete": "One side lacks an ingredient or a route, so nothing can match it.",
+      "deterministic-code-exact": "Both records carry the same clinical code.",
+      "deterministic-code-hierarchical": "Their codes differ, but one is a broader form of the other.",
+      "concept-identity-match": "Both records resolve to the same clinical concept.",
+      "deterministic-code-mismatch": "They carry different codes in the same code system.",
+      "nlp-normalization-match": {
+        "merge": "Their wording matched once normalized.",
+        "reject": "Their wording still differed once normalized."
+      },
+      "embedding-similarity": {
+        "merge": "Their descriptions are close in meaning.",
+        "reject": "Their descriptions are far apart in meaning."
+      },
+      "llm-adjudication": {
+        "merge": "A language model read both and judged them the same thing.",
+        "reject": "A language model read both and judged them different things."
+      },
+      "fallback": "Decided by {rule}."
     }
   }
 }

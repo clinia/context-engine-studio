@@ -108,17 +108,46 @@ function StepRows({ parts }: { parts: MessagePart[] }) {
   return <>{rows}</>;
 }
 
-/** Per-step token usage caption, shown beneath a step once it finishes. */
-function StepTokens({ usage }: { usage: ChatStepUsage }) {
+/** Adds up each billed bucket across steps; a missing bucket counts as 0. */
+export function sumUsage(usages: ChatStepUsage[]): Required<ChatStepUsage> {
+  return usages.reduce<Required<ChatStepUsage>>(
+    (sum, usage) => ({
+      inputTokens: sum.inputTokens + (usage.inputTokens ?? 0),
+      cacheReadTokens: sum.cacheReadTokens + (usage.cacheReadTokens ?? 0),
+      cacheWriteTokens: sum.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
+      outputTokens: sum.outputTokens + (usage.outputTokens ?? 0),
+    }),
+    { inputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0 },
+  );
+}
+
+/**
+ * Billed tokens as `input 48K (cached 45K, write 3K) · out 812`: total input first, then how
+ * much of it was read from or written to the prompt cache, each shown only when above 0.
+ */
+export function TokenUsage({ usage, className }: { usage: ChatStepUsage; className?: string }) {
   const t = useTranslations("chat");
-  if (usage.totalTokens == null) return null;
+  const { inputTokens, cacheReadTokens, cacheWriteTokens, outputTokens } = sumUsage([usage]);
+  const total = inputTokens + cacheReadTokens + cacheWriteTokens;
+  const cacheDetails = [
+    cacheReadTokens > 0 ? t("cachedTokens", { count: cacheReadTokens }) : null,
+    cacheWriteTokens > 0 ? t("cacheWriteTokens", { count: cacheWriteTokens }) : null,
+  ].filter(Boolean);
+  const input = t("inputTokens", { count: total });
   return (
-    <p
-      className="pl-10 font-mono text-[10px] text-muted-foreground/70"
-      title={`↑${usage.inputTokens ?? 0} ↓${usage.outputTokens ?? 0}`}
+    <span
+      className={className}
+      title={t("tokenUsageTitle", {
+        total,
+        input: inputTokens,
+        cacheRead: cacheReadTokens,
+        cacheWrite: cacheWriteTokens,
+        output: outputTokens,
+      })}
     >
-      {t("tokens", { count: usage.totalTokens })}
-    </p>
+      {cacheDetails.length > 0 ? `${input} (${cacheDetails.join(", ")})` : input}
+      {` · ${t("outputTokens", { count: outputTokens })}`}
+    </span>
   );
 }
 
@@ -160,7 +189,12 @@ export function ChatMessage({ message }: { message: ChatUIMessage }) {
             className={cn(stepIndex > 0 && "mt-2 border-t border-dashed border-border/60 pt-2")}
           >
             <StepRows parts={parts} />
-            {usage ? <StepTokens usage={usage} /> : null}
+            {usage ? (
+              <TokenUsage
+                usage={usage}
+                className="block pl-10 font-mono text-[10px] text-muted-foreground/70"
+              />
+            ) : null}
           </div>
         );
       })}

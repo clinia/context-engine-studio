@@ -64,7 +64,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ patient
     tools,
     stopWhen: stepCountIs(8),
     providerOptions: {
-      anthropic: { thinking: { type: "adaptive" } },
+      // Caches the prompt up to the latest message, so each step and turn rereads the
+      // conversation so far from the cache instead of paying full input price for it.
+      anthropic: { thinking: { type: "adaptive" }, cacheControl: { type: "ephemeral" } },
     },
     onFinish: () => {
       void mcp?.close();
@@ -96,16 +98,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ patient
       writer.merge(
         result.toUIMessageStream<ChatUIMessage>({
           messageMetadata: ({ part }) => {
-            if (part.type === "finish-step") {
-              const { inputTokens, outputTokens, totalTokens } = part.usage;
-              steps.push({ inputTokens, outputTokens, totalTokens });
-              return { steps: [...steps] };
-            }
-            if (part.type === "finish") {
-              const { inputTokens, outputTokens, totalTokens } = part.totalUsage;
-              return { inputTokens, outputTokens, totalTokens, steps: [...steps] };
-            }
-            return undefined;
+            if (part.type !== "finish-step") return undefined;
+            const { inputTokenDetails, outputTokens } = part.usage;
+            steps.push({
+              inputTokens: inputTokenDetails.noCacheTokens,
+              cacheReadTokens: inputTokenDetails.cacheReadTokens,
+              cacheWriteTokens: inputTokenDetails.cacheWriteTokens,
+              outputTokens,
+            });
+            return { steps: [...steps] };
           },
         }),
       );

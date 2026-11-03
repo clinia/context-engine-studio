@@ -7,7 +7,7 @@ import { SparklesIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslations } from "next-intl";
 
-import { ChatMessage, MessageRow } from "@/components/chat/chat-message";
+import { ChatMessage, MessageRow, sumUsage, TokenUsage } from "@/components/chat/chat-message";
 import { Composer } from "@/components/chat/composer";
 import { ToolInspectorProvider } from "@/components/chat/tool-inspector";
 import { NavActions } from "@/components/nav-actions";
@@ -89,10 +89,7 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     }
   }, [status, messages, patientId, sessionId]);
 
-  const totalTokens = messages.reduce(
-    (sum, message) => sum + (message.metadata?.totalTokens ?? 0),
-    0,
-  );
+  const usage = sumUsage(messages.flatMap((message) => message.metadata?.steps ?? []));
   const turns = messages.reduce((count, message) => count + (message.role === "user" ? 1 : 0), 0);
 
   // Follow the latest content as the conversation grows or streams, but only
@@ -122,7 +119,12 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     messages.length > 0 ? (
       <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
         {t("turns", { count: turns })}
-        {totalTokens > 0 ? ` · ${t("tokens", { count: totalTokens })}` : ""}
+        {usage.inputTokens + usage.outputTokens > 0 ? (
+          <>
+            {" · "}
+            <TokenUsage usage={usage} />
+          </>
+        ) : null}
       </span>
     ) : null;
 

@@ -22,9 +22,7 @@ import { MessageMultiple01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 type ChatsState =
-  | { status: "loading" }
-  | { status: "loaded"; chats: ChatSummary[] }
-  | { status: "error" };
+  { status: "loading" } | { status: "loaded"; chats: ChatSummary[] } | { status: "error" };
 
 function TreeMessage({ children }: { children: React.ReactNode }) {
   return <div className="px-3 py-1 text-xs text-sidebar-foreground/60">{children}</div>;

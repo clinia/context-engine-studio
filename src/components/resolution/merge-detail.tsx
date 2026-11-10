@@ -60,12 +60,6 @@ function useLinkPhrase(): (link: MergeLink) => string {
       case "code": {
         const exact = evidence.find((item) => item.kind === "exact-code-match");
         if (exact) return `${formatCodeSystem(exact.system)} ${exact.code}`;
-        const hierarchical = evidence.find((item) => item.kind === "hierarchical-code-match");
-        if (hierarchical) {
-          return t("phraseHierarchical", {
-            ancestor: `${formatCodeSystem(hierarchical.system)} ${hierarchical.ancestorCode}`,
-          });
-        }
         return t("phraseConcept");
       }
       case "wording":

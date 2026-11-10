@@ -58,9 +58,6 @@ function Verdict({ reasoning, count }: { reasoning: MergeReasoning; count: numbe
   const total = reasoning.links.length;
   const exactCount = exactSteps.reduce((sum, step) => sum + reasoning.byStep[step], 0);
   const otherCount = reasoning.links.filter((link) => link.step === null).length;
-  const relatedCodes = reasoning.links.some(
-    (link) => link.decision.decision.ruleId === "deterministic-code-hierarchical",
-  );
   const { sharedCode } = reasoning;
 
   const mono = (chunks: React.ReactNode) => (
@@ -75,9 +72,7 @@ function Verdict({ reasoning, count }: { reasoning: MergeReasoning; count: numbe
                 code: `${formatCodeSystem(sharedCode.system)} ${sharedCode.code}`,
                 mono,
               })
-            : step === "code" && relatedCodes
-              ? t("stepExact.codeRelated")
-              : t(`stepExact.${step}`)}
+            : t(`stepExact.${step}`)}
         </React.Fragment>
       )),
       { type: "disjunction" },

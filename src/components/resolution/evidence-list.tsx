@@ -102,20 +102,6 @@ function EvidenceBody({ evidence }: { evidence: LayerEvidence }) {
         </Row>
       );
 
-    case "hierarchical-code-match":
-      return (
-        <Row
-          meta={
-            <>
-              {t("hierarchicalCode")}{" "}
-              <CodeText system={evidence.system} code={evidence.ancestorCode} />
-            </>
-          }
-        >
-          <Compared a={evidence.codeA} b={evidence.codeB} />
-        </Row>
-      );
-
     case "code-mismatch":
       return (
         <Row meta={t("codeMismatch")}>

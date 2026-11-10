@@ -234,7 +234,6 @@
         "source": "the same source",
         "identity": "the same ingredients and route",
         "code": "matching codes",
-        "codeRelated": "the same or related codes",
         "codeShared": "code <mono>{code}</mono>"
       },
       "scaleExact": "exact",
@@ -277,7 +276,6 @@
       "stepGroupOther": "Other rule",
       "withRecord": "with #{n}",
       "phraseSource": "cites the same source record",
-      "phraseHierarchical": "both under {ancestor}",
       "phraseConcept": "same clinical concept",
       "phraseWording": "fields {score} similar on average",
       "phraseMeaning": "descriptions {score} similar",
@@ -301,7 +299,6 @@
       "none": "No evidence was recorded for this decision.",
       "sourceRef": "Both records cite the same source record.",
       "exactCode": "same code on both",
-      "hierarchicalCode": "related under",
       "codeMismatch": "different codes",
       "conceptIdentity": {
         "concept-identity-match": "same concepts, by {rung}",
@@ -363,7 +360,6 @@
       "medication-identity-mismatch": "The medications differ in their ingredients or route.",
       "medication-identity-incomplete": "One side lacks an ingredient or a route, so nothing can match it.",
       "deterministic-code-exact": "Both records carry the same clinical code.",
-      "deterministic-code-hierarchical": "Their codes differ, but one is a broader form of the other.",
       "concept-identity-match": "Both records resolve to the same clinical concept.",
       "deterministic-code-mismatch": "They carry different codes in the same code system.",
       "nlp-normalization-match": {

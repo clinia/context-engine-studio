@@ -8,7 +8,6 @@ const DECIDING_KINDS: Partial<Record<string, readonly LayerEvidence["kind"][]>> 
   "medication-identity-mismatch": ["medication-identity-mismatch"],
   "medication-identity-incomplete": ["medication-identity-incomplete"],
   "deterministic-code-exact": ["exact-code-match"],
-  "deterministic-code-hierarchical": ["hierarchical-code-match"],
   "concept-identity-match": ["concept-identity-match"],
   "deterministic-code-mismatch": ["code-mismatch"],
   "nlp-normalization-match": ["field-similarity"],

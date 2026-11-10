@@ -22,7 +22,6 @@ const RULE_STEP: Partial<Record<string, Step>> = {
   "source-ref-equality": "source",
   "medication-identity-match": "identity",
   "deterministic-code-exact": "code",
-  "deterministic-code-hierarchical": "code",
   "concept-identity-match": "code",
   "nlp-normalization-match": "wording",
   "embedding-similarity": "meaning",
@@ -99,7 +98,7 @@ export type MergeReasoning = {
   weakest: MergeLink | null;
   /**
    * A code every code link matched on, the first one found when several are. `null` when no
-   * code is common to all of them, no link matched on a code, or one matched on a broader code.
+   * code is common to all of them, or a code link merged without an exact code match.
    */
   sharedCode: { system: string; code: string } | null;
 };

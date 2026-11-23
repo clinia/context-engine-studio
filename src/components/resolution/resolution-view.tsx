@@ -8,6 +8,9 @@ import { usePatient } from "@/contexts/patient-provider";
 import { useActionResult } from "@/hooks/use-action-result";
 import { useResolutionRoute } from "@/hooks/use-resolution-route";
 import { readResolutionImpact } from "@/lib/context-engine-client/actions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorIcon } from "@/components/ui/icons/error";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * The resolution page: what the pipeline did to this patient's records, read off the
@@ -30,9 +33,25 @@ export function ResolutionView() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {(impact.status === "loading" || impact.status === "idle") && (
+        // Shaped like the five impact tiles.
+        <div
+          className="grid grid-cols-2 gap-2 border-b border-border px-4 py-3 sm:grid-cols-5"
+          aria-hidden
+        >
+          {Array.from({ length: 5 }, (_, tile) => (
+            <Skeleton key={tile} className="h-14" />
+          ))}
+        </div>
+      )}
       {impact.status === "loaded" && <ResolutionImpact impact={impact.data} />}
       {impact.status === "error" && (
-        <p className="border-b border-border px-4 py-3 text-sm text-destructive">{impact.error}</p>
+        <div className="border-b border-border px-4 py-3">
+          <Alert variant="destructive" role="note">
+            <ErrorIcon />
+            <AlertDescription>{impact.error}</AlertDescription>
+          </Alert>
+        </div>
       )}
 
       <FactsLane registryKey={registryKey} route={route} />

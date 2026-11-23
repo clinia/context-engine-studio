@@ -20,7 +20,7 @@ We'd appreciate a chance to release a fix before you publish details, though tha
 
 ## Scope
 
-**In scope** — this repository: the Studio application, its server-side routes, its handling of credentials and tokens, its local chat database, and its dependency surface as declared here.
+**In scope** — this repository: the Studio application, its server-side routes, its handling of credentials and tokens, its chat database, and its dependency surface as declared here.
 
 **Out of scope for this repository** — the hosted Clinia Context Engine, the workspace API, the Clinia Console, and the authorization server. Vulnerabilities in those are not Studio issues and no fix for them can come from this repository. The same address reaches us, and they're handled under Clinia's product security process rather than through this repository's advisories, so please say which you believe you've found.
 
@@ -36,5 +36,5 @@ Studio is a reference application, not a hardened deployment target. If you run 
 
 - It is a **server-side** trust boundary. Every variable in `.env.local` — the OAuth client secret and the Anthropic API key especially — is read server-side and must never reach a browser bundle.
 - It has **no authentication of its own**. Anyone who can reach your Studio instance can act with the workspace credentials it holds. Put it behind your own access control, or keep it on localhost.
-- The **local chat database** (`STUDIO_CHAT_DB_PATH`, SQLite) accumulates conversation history about whichever patients you loaded, in plaintext on disk. Treat that file as clinical data: it is not encrypted, and it is not covered by your workspace's retention policy.
+- The **chat database** (`STUDIO_DATABASE_URL`) accumulates conversation history about whichever patients you loaded, unencrypted. Treat it as clinical data, whether it is the embedded database directory or a Postgres server: Studio does not encrypt it, and it is not covered by your workspace's retention policy.
 - **Chat content goes to Anthropic.** The assistant sends patient context to the Anthropic API to answer questions. Make sure that's consistent with your agreements before pointing Studio at real records.

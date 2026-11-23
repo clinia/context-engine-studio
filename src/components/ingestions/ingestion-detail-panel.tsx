@@ -2,14 +2,14 @@
 
 import { useTranslations } from "next-intl";
 
-import { formatDuration } from "@/components/ingestions/format";
+import { formatByteLimit, formatDuration, formatPageRanges } from "@/components/ingestions/format";
 import { formatAbsolute, formatRelative } from "@/lib/format-date";
 import { IngestionStatusBadge } from "@/components/ingestions/ingestion-status-badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Ingestion, IngestionIntake } from "@clinia/context-engine-js";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { CloseIcon } from "@/components/ui/icons/close";
 
 type IntakeUnit = IngestionIntake[number];
 type IntakeEntry = IntakeUnit["entries"][number];
@@ -23,25 +23,60 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/** `name`, when given, leads the heading in its own case: a file's name as uploaded. */
+function Section({
+  title,
+  name,
+  children,
+}: {
+  title: string;
+  name?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="space-y-2">
-      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{title}</h3>
+      <h3 className="flex items-baseline gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        {name && (
+          <span
+            className="min-w-0 truncate text-sm tracking-normal text-foreground normal-case"
+            title={name}
+          >
+            {name}
+          </span>
+        )}
+        <span className="shrink-0">{title}</span>
+      </h3>
       {children}
     </section>
   );
 }
 
-/** `ignored` is the only outcome worth colouring — the content did not land. */
+/**
+ * `ignored` is the only outcome worth colouring — the content did not land. An ignored page
+ * entry is named by its pages (`page · 1–3, 5`), which is what a reader goes back to the file for;
+ * an entry over a limit, by the limit (`application/pdf · max 40 pages`).
+ */
 function IntakeEntryRow({ entry }: { entry: IntakeEntry }) {
   const t = useTranslations("ingestions");
 
+  const detail = entry.pageNumbers
+    ? formatPageRanges(entry.pageNumbers)
+    : entry.limit
+      ? t(`intakeLimit.${entry.limit.name}`, {
+          value:
+            entry.limit.name === "file_bytes"
+              ? formatByteLimit(entry.limit.value)
+              : entry.limit.value,
+        })
+      : entry.label;
+  const label = detail ? `${entry.kind} · ${detail}` : entry.kind;
+
   return (
     <li className="flex items-baseline gap-2 py-1.5 text-sm">
-      <span className="min-w-0 flex-1 truncate">
-        {entry.label ? `${entry.kind} · ${entry.label}` : entry.kind}
+      <span className="min-w-0 flex-1 truncate" title={label}>
+        {label}
       </span>
-      <Badge variant={entry.outcome === "ignored" ? "destructive" : "muted"}>
+      <Badge variant={entry.outcome === "ignored" ? "destructive" : "secondary"}>
         {entry.reason ? t(`intakeReason.${entry.reason}`) : t(`intakeOutcome.${entry.outcome}`)}
       </Badge>
       <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
@@ -79,7 +114,7 @@ export function IngestionDetailPanel({
           </p>
         </div>
         <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t("closeDetail")}>
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+          <CloseIcon />
         </Button>
       </div>
 
@@ -118,19 +153,19 @@ export function IngestionDetailPanel({
 
         {failure && (
           <Section title={t("detailFailure")}>
-            <div className="space-y-1 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2.5">
-              <p className="font-mono text-xs text-destructive">{failure.code}</p>
-              <p className="text-sm">{failure.message}</p>
-            </div>
+            <Alert variant="destructive" role="note">
+              <AlertTitle className="font-mono text-xs font-normal">{failure.code}</AlertTitle>
+              <AlertDescription className="text-foreground">{failure.message}</AlertDescription>
+            </Alert>
           </Section>
         )}
 
         <Section title={t("detailStaged")}>
           <dl className="grid grid-cols-3 gap-2">
             {(["facts", "events", "narratives"] as const).map((kind) => (
-              <div key={kind} className="rounded-xl border border-border px-3 py-2">
+              <div key={kind} className="rounded-lg border border-border bg-card px-3 py-2">
                 <dt className="text-xs text-muted-foreground">{t(`staged.${kind}`)}</dt>
-                <dd className="text-lg tabular-nums">{staged[kind]}</dd>
+                <dd className="text-body-m tabular-nums">{staged[kind]}</dd>
               </div>
             ))}
           </dl>
@@ -144,6 +179,7 @@ export function IngestionDetailPanel({
           intake.map((unit, index) => (
             <Section
               key={`${unit.unit}-${index}`}
+              name={unit.filename}
               title={t("detailIntakeUnit", {
                 unit: t(`intakeUnit.${unit.unit}`),
                 count: unit.received,

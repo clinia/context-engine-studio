@@ -4,6 +4,8 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { VfsFormat } from "@/lib/context-engine-client/actions";
+import type { LinkResolver } from "@/lib/link-resolver";
+import { vfsPath, vfsResolve, type VfsPath } from "@/lib/vfs-path";
 
 export const DEFAULT_VFS_FORMAT: VfsFormat = "narrative";
 
@@ -15,11 +17,13 @@ function isVfsFormat(value: string | null): value is VfsFormat {
 
 export type VfsRoute = {
   /** Currently selected VFS file path, or `null` when no file is open. */
-  selectedPath: string | null;
+  selectedPath: VfsPath | null;
   /** Requested render format, defaulting to {@link DEFAULT_VFS_FORMAT}. */
   format: VfsFormat;
+  /** The URL that opens a file in the main content, preserving `format`. */
+  fileHref: (path: VfsPath) => string;
   /** Opens a file in the main content by setting `path`, preserving `format`. */
-  selectFile: (path: string) => void;
+  selectFile: (path: VfsPath) => void;
   /** Switches the render format, preserving the open `path`. */
   setFormat: (format: VfsFormat) => void;
   /** Closes the open file, returning to the bare patient view. */
@@ -39,7 +43,8 @@ export function useVfsRoute(): VfsRoute {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const selectedPath = searchParams.get("path");
+  const pathParam = searchParams.get("path");
+  const selectedPath = pathParam ? vfsPath(pathParam) : null;
   const formatParam = searchParams.get("format");
   const format = isVfsFormat(formatParam) ? formatParam : DEFAULT_VFS_FORMAT;
 
@@ -52,18 +57,39 @@ export function useVfsRoute(): VfsRoute {
     return patients === "patients" && id ? `/${patients}/${id}` : pathname;
   }, [pathname]);
 
-  const push = React.useCallback(
+  const hrefWith = React.useCallback(
     (key: "path" | "format", value: string) => {
       const next = new URLSearchParams(searchParams);
       next.set(key, value);
-      router.push(`${patientBase}?${next.toString()}`);
+      return `${patientBase}?${next.toString()}`;
     },
-    [patientBase, router, searchParams],
+    [patientBase, searchParams],
+  );
+  const push = React.useCallback(
+    (key: "path" | "format", value: string) => router.push(hrefWith(key, value)),
+    [hrefWith, router],
   );
 
-  const selectFile = React.useCallback((path: string) => push("path", path), [push]);
+  const fileHref = React.useCallback((path: VfsPath) => hrefWith("path", path), [hrefWith]);
+  const selectFile = React.useCallback((path: VfsPath) => push("path", path), [push]);
   const setFormat = React.useCallback((value: VfsFormat) => push("format", value), [push]);
   const clearSelection = React.useCallback(() => router.push(patientBase), [patientBase, router]);
 
-  return { selectedPath, format, selectFile, setFormat, clearSelection };
+  return { selectedPath, format, fileHref, selectFile, setFormat, clearSelection };
+}
+
+/**
+ * Maps a link in rendered Markdown to the URL that opens its file in the viewer. Relative
+ * links start from the file at `from`. Leave `from` out for Markdown that is not a file, such
+ * as a chat message, where only absolute links resolve.
+ */
+export function useVfsLinkResolver(from: VfsPath | null = null): LinkResolver {
+  const { fileHref } = useVfsRoute();
+  return React.useCallback(
+    (href: string) => {
+      const target = vfsResolve(from, href);
+      return target ? fileHref(target) : null;
+    },
+    [from, fileHref],
+  );
 }

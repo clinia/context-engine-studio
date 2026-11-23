@@ -30,24 +30,28 @@ import {
 import { patientLabel, usePatient } from "@/contexts/patient-provider";
 import { useIngestionStartedToast } from "@/hooks/use-ingestion-started-toast";
 import type { PatientListItem } from "@/lib/context-engine-client/actions";
-import { PatientIcon, PlusSignIcon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PersonIcon } from "@/components/ui/icons/person";
+import { AddIcon } from "@/components/ui/icons/add";
+import { UnfoldMoreIcon } from "@/components/ui/icons/unfold-more";
 
-/** Up-to-two-letter initials for a patient, or the patient glyph when unnamed. */
-function PatientAvatar({ item, className }: { item: PatientListItem; className?: string }) {
-  if (!item.patient?.name) {
-    return <HugeiconsIcon icon={PatientIcon} strokeWidth={2} className={className} />;
-  }
-
-  const initials = item.patient.name
-    .split(/\s+/)
+/** The patient's up-to-two-letter initials, or the patient glyph when unnamed. */
+function PatientAvatar({ item, size }: { item?: PatientListItem; size?: "sm" | "default" }) {
+  const initials = item?.patient?.name
+    ?.split(/\s+/)
     .filter(Boolean)
     .map((word) => word[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
 
-  return <span className="text-xs font-semibold">{initials}</span>;
+  return (
+    <Avatar size={size}>
+      <AvatarFallback className="font-medium">
+        {initials || <PersonIcon className="size-4" />}
+      </AvatarFallback>
+    </Avatar>
+  );
 }
 
 export function PatientSwitcher() {
@@ -57,6 +61,8 @@ export function PatientSwitcher() {
   const { isMobile } = useSidebar();
   const { patients, activePatient } = usePatient();
   const [createOpen, setCreateOpen] = React.useState(false);
+  // The form is sending, or waiting for the user to continue: closing would lose its marks.
+  const [formLocked, setFormLocked] = React.useState(false);
   const notifyIngestionStarted = useIngestionStartedToast();
 
   const handleCreated = (patientId: string, accepted: number) => {
@@ -78,13 +84,7 @@ export function PatientSwitcher() {
               />
             }
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              {activePatient ? (
-                <PatientAvatar item={activePatient} className="size-4" />
-              ) : (
-                <HugeiconsIcon icon={PatientIcon} strokeWidth={2} className="size-4" />
-              )}
-            </div>
+            <PatientAvatar item={activePatient ?? undefined} />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">
                 {activePatient ? patientLabel(activePatient) : t("selectPatient")}
@@ -95,7 +95,7 @@ export function PatientSwitcher() {
                 </span>
               )}
             </div>
-            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-auto opacity-50" />
+            <UnfoldMoreIcon className="ml-auto opacity-50" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
@@ -120,9 +120,7 @@ export function PatientSwitcher() {
                     }
                     className="gap-2 p-2"
                   >
-                    <div className="flex size-6 items-center justify-center rounded-md border">
-                      <PatientAvatar item={patient} className="size-4" />
-                    </div>
+                    <PatientAvatar item={patient} size="sm" />
                     <span className="truncate">{patientLabel(patient)}</span>
                   </DropdownMenuItem>
                 ))
@@ -131,7 +129,7 @@ export function PatientSwitcher() {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 p-2" onClick={() => setCreateOpen(true)}>
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-4" />
+                <AddIcon className="size-4" />
               </div>
               <span className="font-medium text-muted-foreground">{t("createPatient")}</span>
             </DropdownMenuItem>
@@ -139,13 +137,19 @@ export function PatientSwitcher() {
         </DropdownMenu>
       </SidebarMenuItem>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          if (open || !formLocked) setCreateOpen(open);
+        }}
+      >
+        {/* A long file list scrolls inside the dialog rather than past the viewport. */}
+        <DialogContent className="max-h-[90vh] overflow-y-auto" showCloseButton={!formLocked}>
           <DialogHeader>
             <DialogTitle>{tIngest("createTitle")}</DialogTitle>
             <DialogDescription>{tIngest("createDescription")}</DialogDescription>
           </DialogHeader>
-          <PatientIngestForm onSuccess={handleCreated} />
+          <PatientIngestForm onSuccess={handleCreated} onLockedChange={setFormLocked} />
         </DialogContent>
       </Dialog>
     </SidebarMenu>

@@ -4,9 +4,9 @@ import type { LayerEvidence } from "@/lib/context-engine-client/graph-payloads";
 /** The evidence kinds each stop rule settles on. */
 const DECIDING_KINDS: Partial<Record<string, readonly LayerEvidence["kind"][]>> = {
   "source-ref-equality": ["source-ref"],
-  "medication-identity-match": ["medication-identity-match"],
-  "medication-identity-mismatch": ["medication-identity-mismatch"],
-  "medication-identity-incomplete": ["medication-identity-incomplete"],
+  "identity-match": ["identity-match"],
+  "identity-mismatch": ["identity-mismatch"],
+  "identity-incomplete": ["identity-incomplete"],
   "deterministic-code-exact": ["exact-code-match"],
   "concept-identity-match": ["concept-identity-match"],
   "deterministic-code-mismatch": ["code-mismatch"],

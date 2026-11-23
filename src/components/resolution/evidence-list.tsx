@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import * as React from "react";
 
-import { useFormatIdentity } from "@/components/resolution/identity";
 import { CodeText } from "@/components/resolution/record-detail";
 import type { LayerEvidence } from "@/lib/context-engine-client/graph-payloads";
 import { percent } from "@/lib/resolution/format";
@@ -89,7 +88,6 @@ function LlmConflicts({
 /** One piece of evidence as a line or two: the values compared, then what they show. */
 function EvidenceBody({ evidence }: { evidence: LayerEvidence }) {
   const t = useTranslations("resolution.evidence");
-  const formatIdentity = useFormatIdentity();
 
   switch (evidence.kind) {
     case "source-ref":
@@ -122,15 +120,15 @@ function EvidenceBody({ evidence }: { evidence: LayerEvidence }) {
         </Row>
       );
 
-    case "medication-identity-match":
-    case "medication-identity-mismatch":
-    case "medication-identity-incomplete":
+    case "identity-match":
+    case "identity-mismatch":
+    case "identity-incomplete":
       return (
-        <Row meta={t(`identity.${evidence.kind}`)}>
+        <Row meta={t(`identity.${evidence.type}.${evidence.kind}`)}>
           <Compared
-            a={formatIdentity(evidence.a)}
-            b={formatIdentity(evidence.b)}
-            same={evidence.kind === "medication-identity-match"}
+            a={evidence.a?.display ?? null}
+            b={evidence.b?.display ?? null}
+            same={evidence.kind === "identity-match"}
           />
         </Row>
       );
@@ -216,7 +214,7 @@ export function EvidenceList({
       {byLayerRun(evidence).map((run, runIndex) => (
         <div key={`${run.layer}-${runIndex}`} className="space-y-1">
           {showLayer && (
-            <p className="text-[0.6875rem] tracking-wide text-muted-foreground uppercase">
+            <p className="text-body-xs tracking-wide text-muted-foreground uppercase">
               {run.layer}
             </p>
           )}

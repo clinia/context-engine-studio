@@ -13,6 +13,8 @@ import {
   SortMenuItems,
 } from "@/components/table-filter/filter-menu";
 import { Button } from "@/components/ui/button";
+import { KeyboardArrowDownIcon } from "@/components/ui/icons/keyboard-arrow-down";
+import { KeyboardArrowUpIcon } from "@/components/ui/icons/keyboard-arrow-up";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ArrowDown01Icon, ArrowUp01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { AddIcon } from "@/components/ui/icons/add";
 
 /**
  * Squarer, and carried by its border rather than a fill.
@@ -46,11 +47,11 @@ function SortChip({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="outline" size="sm" className={CHIP} />}>
-        <HugeiconsIcon
-          icon={definition.direction === "asc" ? ArrowUp01Icon : ArrowDown01Icon}
-          strokeWidth={2}
-          className="size-3"
-        />
+        {definition.direction === "asc" ? (
+          <KeyboardArrowUpIcon className="size-3" />
+        ) : (
+          <KeyboardArrowDownIcon className="size-3" />
+        )}
         {definition.label}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-44">
@@ -129,7 +130,7 @@ export function FilterSortBar({
               />
             }
           >
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-3" />
+            <AddIcon className="size-3" />
             {labels.addFilter}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-40">

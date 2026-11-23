@@ -4,8 +4,7 @@ import * as React from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronRightIcon } from "@/components/ui/icons/chevron-right";
 
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -34,7 +33,7 @@ export function Disclosure({
           className,
         )}
       >
-        <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-3 shrink-0" />
+        <ChevronRightIcon className="size-3 shrink-0" />
         {summary}
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-1.5">{children}</CollapsibleContent>

@@ -49,8 +49,9 @@ export function IngestionsTable({
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
+      {/* Opaque, so rows scrolling under the sticky header don't show through. */}
+      <TableHeader className="sticky top-0 z-10 bg-background">
+        <TableRow>
           <ColumnHeader
             label={t("columnStatus")}
             filter={filterFor("status")}
@@ -73,7 +74,8 @@ export function IngestionsTable({
           return (
             <TableRow
               key={ingestion.ingestionId}
-              data-selected={ingestion.ingestionId === selectedId || undefined}
+              data-state={ingestion.ingestionId === selectedId ? "selected" : undefined}
+              interactive
               onClick={() => onSelect(ingestion.ingestionId)}
               // Focusable and activatable, so opening a submission does not
               // require a mouse. No `role="button"`: that would replace the

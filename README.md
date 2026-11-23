@@ -18,14 +18,14 @@ Studio is a local starting point and a tool for poking at your own data. It is n
 - **Ingest a patient record** — drop a folder of FHIR, CDA, or document files and watch the engine resolve entities across them.
 - **Browse the virtual file system** — navigate the patient story as paths rather than as raw resources, and read each file as a **Narrative**, **Compact**, or **Structured** view.
 - **Chat over the record** — ask questions answered by a tool-using Claude agent that reads the VFS over MCP and cites the files it used.
-- **Keep the thread** — chats are listed per patient and reopen where you left them, backed by a local SQLite file.
+- **Keep the thread** — chats are listed per patient and reopen where you left them, stored in an embedded Postgres database by default, or in a Postgres server you point it at.
 
 ## Prerequisites
 
 | What                                          | Why                                                                                                                                                                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Node.js 20.9+**                             | Required by Next.js 16. `.nvmrc` pins 26, which is what Studio is built and tested on.                                                                                                                     |
-| **pnpm 10+**                                  | The `packageManager` field pins the exact version; `corepack enable` will honour it.                                                                                                                       |
+| **pnpm 12+**                                  | The `packageManager` field pins the exact version; `corepack enable` will honour it.                                                                                                                       |
 | **A Clinia workspace**                        | Where your patient data actually lives. Created in the [Clinia Console](https://console.clinia.cloud).                                                                                                     |
 | **Workspace OAuth credentials, Read & Write** | Studio ingests data and creates patients, so read-only credentials will fail on those actions. See [Authentication and Credentials](https://docs.clinia.com/docs/platform/authentication-and-credentials). |
 | **An Anthropic API key**                      | The chat assistant calls Claude directly from Studio's server. Needs access to `claude-opus-4-8`.                                                                                                          |
@@ -55,7 +55,9 @@ pnpm install
 pnpm dev
 ```
 
-Open <http://localhost:3000>. With no patients in the workspace yet, Studio sends you straight to onboarding to create your first one. The local chat database is created and migrated on first use — there is no separate migration step.
+Studio creates and migrates its local chat database when it starts.
+
+Open <http://localhost:3000>. With no patients in the workspace yet, Studio sends you straight to onboarding to create your first one.
 
 ## Configuration
 
@@ -74,9 +76,9 @@ Every Clinia workspace is secured, so all four variables above are required and 
 
 ### Optional
 
-| Variable              | Default                   | Description                                                                                  |
-| --------------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
-| `STUDIO_CHAT_DB_PATH` | `./.data/studio-chats.db` | Local SQLite file holding chat history for the sidebar and reopening. Created automatically. |
+| Variable              | Default                  | Description                                                                                                                                                                                                                                                                                                             |
+| --------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STUDIO_DATABASE_URL` | `file:./.data/studio-db` | Database holding chat history for the sidebar and reopening. `file:<path>` opens an embedded [PGlite](https://pglite.dev) database, used by one process at a time; `postgres://…` connects to a Postgres server. Studio migrates a PGlite database when it starts; migrate a Postgres one with `pnpm cli deps migrate`. |
 
 ## Try it with synthetic data
 

@@ -1,11 +1,8 @@
 import { defineConfig } from "drizzle-kit";
 
-/**
- * Studio-local chat store. SQLite for now; the schema is plain Drizzle so
- * switching `dialect` (e.g. to `postgresql`) later is a small change.
- */
+/** Studio-local tables, run on PGlite or a Postgres server. */
 export default defineConfig({
-  dialect: "sqlite",
-  schema: "./src/persistence/sqlite/schema.ts",
+  dialect: "postgresql",
+  schema: "./src/persistence/postgres/schema.ts",
   out: "./migrations",
 });

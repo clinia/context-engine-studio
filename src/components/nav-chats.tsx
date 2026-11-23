@@ -17,20 +17,20 @@ import {
 import { usePatient } from "@/contexts/patient-provider";
 import { listChats } from "@/lib/chat/actions";
 import { onChatsChanged } from "@/lib/chat/events";
-import type { ChatSummary } from "@/persistence/chat-store";
-import { MessageMultiple01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import type { ChatSummary } from "@/persistence/chat-repository";
+import { ForumIcon } from "@/components/ui/icons/forum";
 
 type ChatsState =
   { status: "loading" } | { status: "loaded"; chats: ChatSummary[] } | { status: "error" };
 
 function TreeMessage({ children }: { children: React.ReactNode }) {
-  return <div className="px-3 py-1 text-xs text-sidebar-foreground/60">{children}</div>;
+  // A list item: it sits in the menu list among the entries it stands in for.
+  return <li className="px-3 py-1 text-xs text-sidebar-foreground/60">{children}</li>;
 }
 
 /**
  * "Chats" sidebar group: the active patient's saved chats, most-recent-first,
- * each linking back to `/patients/{patientId}/chat/{sessionId}` to reopen and
+ * each linking back to `/patients/{patientId}/chat/{chatId}` to reopen and
  * continue the conversation. Keyed by patient in the sidebar, so switching
  * patients remounts it with fresh state; it also refetches when the open chat
  * changes so a just-continued chat resurfaces at the top.
@@ -87,17 +87,15 @@ export function NavChats() {
           )}
           {state.status === "loaded" &&
             state.chats.map((chat) => (
-              <SidebarMenuItem key={chat.sessionId}>
+              <SidebarMenuItem key={chat.chatId}>
                 <SidebarMenuButton
-                  isActive={chat.sessionId === currentId}
+                  isActive={chat.chatId === currentId}
                   title={chat.title}
                   render={
-                    <Link
-                      href={`/patients/${encodeURIComponent(patientId)}/chat/${chat.sessionId}`}
-                    />
+                    <Link href={`/patients/${encodeURIComponent(patientId)}/chat/${chat.chatId}`} />
                   }
                 >
-                  <HugeiconsIcon icon={MessageMultiple01Icon} strokeWidth={2} />
+                  <ForumIcon />
                   <span className="truncate">{chat.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

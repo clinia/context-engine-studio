@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { ArrowDown01Icon, RefreshIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { KeyboardArrowDownIcon } from "@/components/ui/icons/keyboard-arrow-down";
+import { RefreshIcon } from "@/components/ui/icons/refresh";
 
 /**
  * Selectable auto-refresh intervals, in milliseconds.
@@ -57,20 +57,15 @@ export function RefreshControl({
   offLabel: string;
 }) {
   return (
-    <div className="flex items-center">
+    <ButtonGroup>
       <Button
         variant="outline"
         size="sm"
-        className="rounded-l-lg rounded-r-none border-r-0 bg-transparent hover:bg-muted"
         onClick={onRefresh}
         disabled={isRefreshing}
         aria-label={refreshLabel}
       >
-        <HugeiconsIcon
-          icon={RefreshIcon}
-          strokeWidth={2}
-          className={isRefreshing ? "animate-spin" : undefined}
-        />
+        <RefreshIcon className={isRefreshing ? "animate-spin" : undefined} />
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -78,10 +73,7 @@ export function RefreshControl({
             <Button
               variant="outline"
               size="sm"
-              className={cn(
-                "rounded-l-none rounded-r-lg bg-transparent hover:bg-muted",
-                intervalMs === null ? "px-1.5" : "pr-1.5 pl-2",
-              )}
+              className={intervalMs === null ? "px-1.5" : "pr-1.5 pl-2"}
             />
           }
           aria-label={autoRefreshLabel}
@@ -89,7 +81,7 @@ export function RefreshControl({
           {intervalMs !== null && (
             <span className="tabular-nums">{formatInterval(intervalMs)}</span>
           )}
-          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
+          <KeyboardArrowDownIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-32">
           {/* The label is a group part: Base UI throws without this wrapper. */}
@@ -114,6 +106,6 @@ export function RefreshControl({
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-    </div>
+    </ButtonGroup>
   );
 }

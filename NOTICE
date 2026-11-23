@@ -16,11 +16,20 @@ src/lib/utils.ts and src/hooks/use-mobile.ts, are derived from shadcn/ui
 
 --------------------------------------------------------------------------------
 
+Material Symbols
+Copyright Google LLC
+Licensed under the Apache License, Version 2.0.
+
+The icons in src/components/ui/icons/ are drawn from Google's Material Symbols
+(https://fonts.google.com/icons).
+
+--------------------------------------------------------------------------------
+
 Trademarks
 
 "Clinia" and the Clinia name, logo and other brand features are trademarks of
 Clinia Health Inc. Section 6 of the Apache License grants no rights to use them,
 and this notice grants none either. The marks are reproduced in this repository
-only in public/Logomark.svg, public/Logotype.svg, and the application icons
-derived from them; replace those files in any fork, redistribution, or derivative
-work that is not published by Clinia Health Inc.
+only in public/favicon.ico and public/favicon/, the application icons; replace
+those files in any fork, redistribution, or derivative work that is not
+published by Clinia Health Inc.

@@ -15,7 +15,7 @@ export function PatientOnboarding() {
     <main className="flex min-h-svh items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-6">
         <div className="space-y-1.5 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("onboardingTitle")}</h1>
+          <h1 className="font-display text-title-xs">{t("onboardingTitle")}</h1>
           <p className="text-muted-foreground text-sm">{t("onboardingDescription")}</p>
         </div>
         <PatientIngestForm

@@ -2,27 +2,25 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { GitMergeIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 
 import { Markdown } from "@/components/markdown";
 import { FactDetailPanel } from "@/components/resolution/fact-detail-panel";
 import { ResizableAside } from "@/components/resolution/resizable-aside";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from "@/components/ui/empty";
+import { DescriptionIcon } from "@/components/ui/icons/description";
+import { ErrorIcon } from "@/components/ui/icons/error";
+import { StacksIcon } from "@/components/ui/icons/stacks";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toggle } from "@/components/ui/toggle";
 import { usePatient } from "@/contexts/patient-provider";
-import { useActionResult } from "@/hooks/use-action-result";
-import { useVfsRoute } from "@/hooks/use-vfs-route";
-import {
-  listFactSlugs,
-  readResolvedFact,
-  readVfs,
-  type FactNodeType,
-  type ResolvedFact,
-  type VfsFormat,
-} from "@/lib/context-engine-client/actions";
-import { attempt, ok, type Result } from "@/lib/result";
-import { vfsFactRef } from "@/lib/vfs-fact";
+import { useVfsListing, type VfsLocation } from "@/contexts/vfs-listing-provider";
+import { type ActionState, useActionResult } from "@/hooks/use-action-result";
+import { useVfsLinkResolver, useVfsRoute } from "@/hooks/use-vfs-route";
+import { readVfs, type ResolvedFact, type VfsFormat } from "@/lib/context-engine-client/actions";
+import { resolveVfsFact, vfsFactEntryPath } from "@/lib/vfs-fact";
+import { vfsName, vfsParent, type VfsPath } from "@/lib/vfs-path";
 
 const FORMATS: { value: VfsFormat; labelKey: "tabNarrative" | "tabCompact" | "tabStructured" }[] = [
   { value: "narrative", labelKey: "tabNarrative" },
@@ -30,53 +28,34 @@ const FORMATS: { value: VfsFormat; labelKey: "tabNarrative" | "tabCompact" | "ta
   { value: "structured", labelKey: "tabStructured" },
 ];
 
-function fileName(path: string): string {
-  const segments = path.split("/").filter(Boolean);
-  return segments.at(-1) ?? path;
-}
-
-/** File name → fact id per patient and fact type, kept for the session. */
-const slugIndex = new Map<string, Promise<Result<Record<string, string>>>>();
-
-function readSlugIndex(patientId: string, type: FactNodeType, refresh: boolean) {
-  const key = `${patientId}:${type}`;
-  let index = slugIndex.get(key);
-  if (!index || refresh) {
-    index = attempt(listFactSlugs(patientId, type));
-    slugIndex.set(key, index);
-  }
-  return index;
-}
-
-/** The fact id behind a file name, re-reading the index once when the name is missing. */
-async function findFactId(patientId: string, type: FactNodeType, slug: string) {
-  for (const refresh of [false, true]) {
-    const index = await readSlugIndex(patientId, type, refresh);
-    if (!index.ok) return null;
-    const id = index.data[slug];
-    if (id) return id;
-  }
-  return null;
-}
-
-/** The resolved fact behind the open file, or null when the file is not a fact. */
-function useVfsFact(patientId: string | null, path: string | null): ResolvedFact | null {
-  const ref = path ? vfsFactRef(path) : null;
-  const type = ref?.type;
-  const slug = ref?.slug;
-
-  const load = React.useMemo(
-    () =>
-      patientId && type && slug
-        ? async () => {
-            const id = await findFactId(patientId, type, slug);
-            return id ? readResolvedFact(patientId, id) : ok(null);
-          }
-        : null,
-    [patientId, type, slug],
+/**
+ * The open file's heading: the readable name of the file, or of the fact it belongs to, read
+ * from its parent's listing. A condition's files take the condition's name. The file name when
+ * the listing names neither, and null while it loads.
+ */
+function useVfsHeading(location: VfsLocation | null): string | null {
+  const entryPath = location && (vfsFactEntryPath(location.path) ?? location.path);
+  const listing = useVfsListing(
+    location && entryPath ? { patientId: location.patientId, path: vfsParent(entryPath) } : null,
   );
-  const state = useActionResult(load);
-  return state.status === "loaded" ? state.data : null;
+  if (!location || !entryPath || listing.status === "idle" || listing.status === "loading") {
+    return null;
+  }
+  const children = listing.status === "loaded" ? listing.data.children : undefined;
+  const entry = children?.find((child) => child.name === vfsName(entryPath));
+  return entry?.display ?? vfsName(location.path) ?? location.path;
+}
+
+/** The resolved fact behind the open file, with a null fact when the file is not one. */
+function useVfsFact(
+  patientId: string | null,
+  path: VfsPath | null,
+): ActionState<ResolvedFact | null> {
+  const load = React.useMemo(
+    () => (patientId && path ? () => resolveVfsFact(patientId, path) : null),
+    [patientId, path],
+  );
+  return useActionResult(load);
 }
 
 /**
@@ -98,16 +77,26 @@ export function VfsFileViewer() {
     [patientId, selectedPath, format],
   );
   const state = useActionResult(loadContent);
-  const fact = useVfsFact(patientId, selectedPath);
+  const factState = useVfsFact(patientId, selectedPath);
+  const fact = factState.status === "loaded" ? factState.data : null;
+  const heading = useVfsHeading(
+    patientId && selectedPath ? { patientId, path: selectedPath } : null,
+  );
   const [panelOpen, setPanelOpen] = React.useState(false);
+  const resolveLink = useVfsLinkResolver(selectedPath);
 
   React.useEffect(() => setPanelOpen(false), [selectedPath]);
 
   if (!selectedPath) {
     return (
-      <div className="flex flex-1 items-center justify-center px-4 py-10">
-        <p className="text-sm text-muted-foreground">{t("selectPrompt")}</p>
-      </div>
+      <Empty className="flex-1">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <DescriptionIcon />
+          </EmptyMedia>
+          <EmptyDescription>{t("selectPrompt")}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 
@@ -117,27 +106,32 @@ export function VfsFileViewer() {
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
           <div className="flex items-start gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <h1 className="text-lg font-semibold">{fileName(selectedPath)}</h1>
+              <h1 className="text-body-m font-medium">{heading ?? "\u00a0"}</h1>
               <p className="text-xs break-all text-muted-foreground">{selectedPath}</p>
+              {factState.status === "error" && (
+                <p className="text-xs text-destructive">{t("factLoadError")}</p>
+              )}
             </div>
             {fact && (
-              <Button
+              <Toggle
                 variant="outline"
                 size="sm"
-                aria-pressed={panelOpen}
-                onClick={() => setPanelOpen((open) => !open)}
+                // Holds its width when the fact panel narrows the column.
+                className="shrink-0"
+                pressed={panelOpen}
+                onPressedChange={setPanelOpen}
               >
-                <HugeiconsIcon icon={GitMergeIcon} strokeWidth={2} />
+                <StacksIcon />
                 {t("openResolution")}
-              </Button>
+              </Toggle>
             )}
           </div>
           <Tabs value={format} onValueChange={(value) => setFormat(value as VfsFormat)}>
             <TabsList>
               {FORMATS.map(({ value, labelKey }) => (
-                <TabsTab key={value} value={value}>
+                <TabsTrigger key={value} value={value}>
                   {t(labelKey)}
-                </TabsTab>
+                </TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
@@ -145,16 +139,28 @@ export function VfsFileViewer() {
 
         <div className="mx-auto w-full max-w-3xl">
           {(state.status === "loading" || state.status === "idle") && (
-            <p className="text-sm text-muted-foreground">{t("loading")}</p>
+            // Shaped like a document: a heading, then lines of text.
+            <div className="flex flex-col gap-3" aria-busy="true">
+              <span className="sr-only">{t("loading")}</span>
+              <Skeleton className="h-7 w-1/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
           )}
-          {state.status === "error" && <p className="text-sm text-destructive">{t("loadError")}</p>}
+          {state.status === "error" && (
+            <Alert variant="destructive" role="note">
+              <ErrorIcon />
+              <AlertDescription>{t("loadError")}</AlertDescription>
+            </Alert>
+          )}
           {state.status === "loaded" &&
             (format === "structured" ? (
-              <pre className="overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs whitespace-pre-wrap">
+              <pre className="overflow-x-auto rounded-lg border bg-card p-4 font-mono text-xs whitespace-pre-wrap">
                 {state.data.content}
               </pre>
             ) : (
-              <Markdown>{state.data.content}</Markdown>
+              <Markdown resolveLink={resolveLink}>{state.data.content}</Markdown>
             ))}
         </div>
       </div>

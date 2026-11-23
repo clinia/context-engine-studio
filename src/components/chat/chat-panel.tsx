@@ -3,8 +3,6 @@
 import * as React from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { SparklesIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslations } from "next-intl";
 
 import { ChatMessage, MessageRow, sumUsage, TokenUsage } from "@/components/chat/chat-message";
@@ -15,13 +13,16 @@ import { PageHeader } from "@/components/page-header";
 import { saveChat } from "@/lib/chat/actions";
 import { emitChatsChanged } from "@/lib/chat/events";
 import type { ChatUIMessage } from "@/lib/chat-types";
+import { WandStarsIcon } from "@/components/ui/icons/wand-stars";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorIcon } from "@/components/ui/icons/error";
 
 type ChatPanelProps = {
   /** Patient that scopes the chat endpoint and the MCP tools. */
   patientId: string;
-  /** Chat id; maps to an engine session and is sent as `sessionId` to the API. */
-  sessionId: string;
-  /** Transcript loaded from the persisted session (empty for a fresh chat). */
+  /** Also the id of the engine session the chat is recorded as. */
+  chatId: string;
+  /** Transcript loaded from the persisted chat (empty for a fresh chat). */
   initialMessages: ChatUIMessage[];
 };
 
@@ -40,7 +41,7 @@ function TypingDots() {
   );
 }
 
-export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelProps) {
+export function ChatPanel({ patientId, chatId, initialMessages }: ChatPanelProps) {
   const t = useTranslations("chat");
   const [input, setInput] = React.useState("");
   const bottomRef = React.useRef<HTMLDivElement>(null);
@@ -52,13 +53,13 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     () =>
       new DefaultChatTransport({
         api: `/api/patients/${encodeURIComponent(patientId)}/chat`,
-        body: { sessionId },
+        body: { chatId },
       }),
-    [patientId, sessionId],
+    [patientId, chatId],
   );
 
   const { messages, sendMessage, status, error, stop } = useChat<ChatUIMessage>({
-    id: sessionId,
+    id: chatId,
     messages: initialMessages,
     transport,
   });
@@ -83,11 +84,11 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
     const turnStarted = !wasBusy && isBusyNow;
     const turnEnded = wasBusy && status === "ready";
     if ((turnStarted || turnEnded) && messages.length > 0) {
-      void saveChat(patientId, sessionId, messages).then((result) => {
+      void saveChat(patientId, chatId, messages).then((result) => {
         if (result.ok) emitChatsChanged();
       });
     }
-  }, [status, messages, patientId, sessionId]);
+  }, [status, messages, patientId, chatId]);
 
   const usage = sumUsage(messages.flatMap((message) => message.metadata?.steps ?? []));
   const turns = messages.reduce((count, message) => count + (message.role === "user" ? 1 : 0), 0);
@@ -117,7 +118,7 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
 
   const stats =
     messages.length > 0 ? (
-      <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
+      <span className="font-mono text-eyebrow-s tracking-widest text-muted-foreground uppercase">
         {t("turns", { count: turns })}
         {usage.inputTokens + usage.outputTokens > 0 ? (
           <>
@@ -145,10 +146,10 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
           <div className="mx-auto w-full max-w-3xl px-6 py-8">
             {messages.length === 0 ? (
               <div className="pt-10">
-                <p className="mb-2 font-mono text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+                <p className="mb-2 font-mono text-eyebrow-s font-medium tracking-widest text-muted-foreground uppercase">
                   {"// sandbox"}
                 </p>
-                <p className="text-lg font-medium text-muted-foreground">{t("empty")}</p>
+                <p className="text-body-m font-medium text-muted-foreground">{t("empty")}</p>
               </div>
             ) : (
               <div className="flex flex-col">
@@ -160,7 +161,7 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
 
             {status === "submitted" ? (
               <MessageRow
-                icon={<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />}
+                icon={<WandStarsIcon className="size-3.5" />}
                 iconClassName="bg-foreground text-background"
                 label={t("assistant")}
               >
@@ -168,7 +169,12 @@ export function ChatPanel({ patientId, sessionId, initialMessages }: ChatPanelPr
               </MessageRow>
             ) : null}
 
-            {error ? <p className="py-4 text-sm text-destructive">{t("error")}</p> : null}
+            {error ? (
+              <Alert variant="destructive" role="note" className="my-4">
+                <ErrorIcon />
+                <AlertDescription>{t("error")}</AlertDescription>
+              </Alert>
+            ) : null}
 
             <div ref={bottomRef} />
           </div>

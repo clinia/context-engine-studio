@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronLeftIcon } from "@/components/ui/icons/chevron-left";
+import { ChevronRightIcon } from "@/components/ui/icons/chevron-right";
 
 /**
  * Page controls for a lane, hidden entirely when everything fits on one page.
@@ -40,7 +40,7 @@ export function PaginationFooter({
         onClick={() => onPageChange(page - 1)}
         aria-label={t("previousPage")}
       >
-        <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
+        <ChevronLeftIcon />
       </Button>
       <Button
         variant="ghost"
@@ -49,7 +49,7 @@ export function PaginationFooter({
         onClick={() => onPageChange(page + 1)}
         aria-label={t("nextPage")}
       >
-        <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
+        <ChevronRightIcon />
       </Button>
     </div>
   );

@@ -61,7 +61,7 @@ function Verdict({ reasoning, count }: { reasoning: MergeReasoning; count: numbe
   const { sharedCode } = reasoning;
 
   const mono = (chunks: React.ReactNode) => (
-    <span className="rounded bg-muted px-1 font-mono text-[0.8125rem]">{chunks}</span>
+    <span className="rounded bg-muted px-1 font-mono text-body-s">{chunks}</span>
   );
   const exact = () =>
     format.list(
@@ -90,12 +90,12 @@ function Verdict({ reasoning, count }: { reasoning: MergeReasoning; count: numbe
   }
 
   if (reasoning.unlinkedIds.length === 0 && exactCount === total) {
-    return <p className="text-[0.9375rem] leading-snug">{t.rich("allExact", { count, exact })}</p>;
+    return <p className="text-body-m leading-snug">{t.rich("allExact", { count, exact })}</p>;
   }
 
   if (count === 2 && total === 1) {
     return (
-      <p className="text-[0.9375rem] leading-snug">
+      <p className="text-body-m leading-snug">
         {t("pairJudged", { checks })}
         {isModelHeavy(reasoning) && <> {t("pairModel")}</>}
       </p>
@@ -103,7 +103,7 @@ function Verdict({ reasoning, count }: { reasoning: MergeReasoning; count: numbe
   }
 
   return (
-    <p className="text-[0.9375rem] leading-snug">
+    <p className="text-body-m leading-snug">
       {reasoning.unlinkedIds.length === 0 && <>{t("eachMatches", { count })} </>}
       {exactCount === total
         ? t.rich("everyExact", { exact })
@@ -129,7 +129,7 @@ function StepLadder({ reasoning }: { reasoning: MergeReasoning }) {
             key={step}
             title={t(`step.${step}`)}
             className={cn(
-              "flex items-center justify-center rounded-sm text-xs font-semibold tabular-nums",
+              "flex items-center justify-center rounded-sm text-xs font-medium tabular-nums",
               STEP_FILL[step],
               index === 0 && "rounded-l-lg",
               index === steps.length - 1 && "rounded-r-lg",
@@ -142,7 +142,7 @@ function StepLadder({ reasoning }: { reasoning: MergeReasoning }) {
         ))}
       </div>
       <div
-        className="grid gap-0.5 text-center text-[0.6875rem] text-muted-foreground"
+        className="grid gap-0.5 text-center text-body-xs text-muted-foreground"
         style={{ gridTemplateColumns: columns }}
       >
         {steps.map((step) => (
@@ -152,7 +152,7 @@ function StepLadder({ reasoning }: { reasoning: MergeReasoning }) {
         ))}
       </div>
       {steps.some(isExactStep) && !steps.every(isExactStep) && (
-        <div className="flex items-center gap-2 text-[0.6875rem] text-muted-foreground">
+        <div className="flex items-center gap-2 text-body-xs text-muted-foreground">
           <span>{t("scaleExact")}</span>
           <span className="flex-1 border-t border-dashed border-border" />
           <span>{t("scaleJudged")}</span>
@@ -173,7 +173,7 @@ export function VerdictCard({ reasoning, count }: { reasoning: MergeReasoning; c
   return (
     <div
       className={cn(
-        "space-y-3.5 rounded-xl border px-3.5 py-3",
+        "space-y-3.5 rounded-lg border px-3.5 py-3",
         isModelHeavy(reasoning) ? "border-caution" : "border-border",
       )}
     >
@@ -225,7 +225,7 @@ export function WeakestLink({ link, records }: { link: MergeLink; records: Recor
   const llm = link.decision.decision.evidence.find((item) => item.kind === "llm");
 
   return (
-    <div className="space-y-1.5 rounded-xl border border-accent/50 bg-accent/5 px-3.5 py-3">
+    <div className="space-y-1.5 rounded-lg border border-accent/50 bg-accent/5 px-3.5 py-3">
       <div className="flex items-baseline gap-2">
         <p className="min-w-0 flex-1 text-sm break-words">{record?.display ?? link.recordId}</p>
         <ResolutionLevelBadge resolution={link.decision.decision.resolution} />
@@ -254,7 +254,7 @@ function AgreementStrip({ agree, total }: { agree: number; total: number }) {
       {Array.from({ length: total }, (_, index) => (
         <span
           key={index}
-          className={cn("h-2.5 w-1.5 rounded-[1px]", index < agree ? "bg-match" : "bg-border")}
+          className={cn("h-2.5 w-1.5 rounded-xs", index < agree ? "bg-match" : "bg-border")}
         />
       ))}
     </span>
@@ -308,7 +308,7 @@ export function Disagreements({
   const t = useTranslations("resolution.reasoning");
 
   return (
-    <div className="divide-y divide-border/60 rounded-xl border border-border">
+    <div className="divide-y divide-border/60 rounded-lg border border-border">
       {conflicts.map(([field, verdict]) => {
         const agree = 1 + verdict.agreed.length;
         const total = agree + verdict.conflict.length;

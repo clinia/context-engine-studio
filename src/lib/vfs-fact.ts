@@ -1,43 +1,43 @@
-import type { FactNodeType } from "@/lib/context-engine-client/actions";
+import { readResolvedFact, type ResolvedFact } from "@/lib/context-engine-client/actions";
+import type { Result } from "@/lib/result";
+import { resolveVfsFactBySlug, slugFactEntryPath } from "@/lib/vfs-fact-slug";
+import { NARRATIVES_SEGMENT, vfsPathOf, vfsSegments, type VfsPath } from "@/lib/vfs-path";
 
-/** VFS sections whose entries are facts, with the depth of the fact's own segment. */
-const FACT_SECTIONS: Record<string, { type: FactNodeType; depth: number }> = {
-  conditions: { type: "condition", depth: 2 },
-  medications: { type: "medication", depth: 2 },
-  allergies: { type: "allergy", depth: 1 },
-  family_history: { type: "family_history", depth: 1 },
-  social_history: { type: "social_history", depth: 1 },
+const FACT_ID_PREFIX = "fct_";
+
+type VfsFactRef = {
+  /** The fact's id, read from its segment in the path. */
+  id: string;
+  /** The path of the fact's own entry, a folder for a condition and a file otherwise. */
+  entryPath: VfsPath;
 };
 
-export type VfsFactRef = { type: FactNodeType; slug: string };
-
 /**
- * A fact's VFS file name: its display as a slug, cut to 50 characters, then the last eight
- * alphanumerics of its id (`type_2_diabetes_k3j9x0aa`). Must match the server's tree.
+ * The fact a VFS path names: its last segment that is a fact id. Null when no segment is one,
+ * and for a condition's narratives, which are not the fact.
  */
-export function factSlug(display: string, id: string): string {
-  const name = display
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "")
-    .slice(0, 50);
-  const suffix = id
-    .replace(/[^a-z0-9]/gi, "")
-    .slice(-8)
-    .toLowerCase();
-  return name ? `${name}_${suffix}` : suffix;
+function vfsFactRef(path: VfsPath): VfsFactRef | null {
+  const segments = vfsSegments(path);
+  const index = segments.findLastIndex((segment) => segment.startsWith(FACT_ID_PREFIX));
+  const segment = segments[index];
+  if (!segment || segments.slice(index + 1).includes(NARRATIVES_SEGMENT)) return null;
+  return {
+    id: segment.replace(/\.md$/, ""),
+    entryPath: vfsPathOf(segments.slice(0, index + 1)),
+  };
 }
 
-/**
- * The fact a VFS path names. Null for paths outside a fact section, and for a condition's
- * narratives, which are not the fact.
- */
-export function vfsFactRef(path: string): VfsFactRef | null {
-  const [section, ...rest] = path.split("/").filter(Boolean);
-  const entry = section ? FACT_SECTIONS[section] : undefined;
-  if (!entry) return null;
-  if (section === "conditions" && rest[2] === "_narratives") return null;
+/** The path of the entry of the fact `path` belongs to. Null when it belongs to none. */
+export function vfsFactEntryPath(path: VfsPath): VfsPath | null {
+  return vfsFactRef(path)?.entryPath ?? slugFactEntryPath(path);
+}
 
-  const slug = rest[entry.depth - 1]?.replace(/\.md$/, "");
-  return slug ? { type: entry.type, slug } : null;
+/** The resolved fact `path` belongs to. Null when it belongs to none. */
+export async function resolveVfsFact(
+  patientId: string,
+  path: VfsPath,
+): Promise<Result<ResolvedFact | null>> {
+  const ref = vfsFactRef(path);
+  if (ref) return readResolvedFact(patientId, ref.id);
+  return resolveVfsFactBySlug(patientId, path);
 }

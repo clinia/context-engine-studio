@@ -33,8 +33,9 @@ export function FactsTable({
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
+      {/* Opaque, so rows scrolling under the sticky header don't show through. */}
+      <TableHeader className="sticky top-0 z-10 bg-background">
+        <TableRow>
           <TableHead>{t("columnFact")}</TableHead>
           <TableHead>{t("columnType")}</TableHead>
           <TableHead className="text-right">{t("columnMembers")}</TableHead>
@@ -46,9 +47,18 @@ export function FactsTable({
           return (
             <TableRow
               key={fact.id}
-              data-selected={fact.id === selectedId || undefined}
+              data-state={fact.id === selectedId ? "selected" : undefined}
+              interactive
               onClick={() => onSelect(fact.id)}
-              className="cursor-pointer"
+              // Focusable and activatable like the ingestions table's rows. No `role="button"`:
+              // it would hide the row's cells from a screen reader.
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                onSelect(fact.id);
+              }}
+              className="cursor-pointer focus-visible:bg-muted focus-visible:outline-none"
             >
               <TableCell className="max-w-96 truncate" title={fact.display}>
                 {fact.display}

@@ -13,8 +13,8 @@ export function toolStatus(part: DynamicToolUIPart): ToolStatus {
 
 /** Tailwind background class for a status dot, keyed by {@link toolStatus}. */
 export const STATUS_DOT: Record<ToolStatus, string> = {
-  running: "bg-amber-500",
-  done: "bg-emerald-500",
+  running: "bg-warning",
+  done: "bg-success",
   error: "bg-destructive",
 };
 

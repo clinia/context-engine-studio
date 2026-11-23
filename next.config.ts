@@ -7,9 +7,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Add the packages in transpilePackages because of standalone mode
   transpilePackages: ["@t3-oss/env-nextjs", "@t3-oss/env-core", "@clinia/context-engine-js"],
-  // better-sqlite3 is a native addon — keep it external so Next doesn't try to
-  // bundle its .node binary into the server build.
-  serverExternalPackages: ["better-sqlite3"],
+  // PGlite loads its .wasm and .data files from its own package directory.
+  // @clinia/ai loads connection SDKs lazily; bundling it resolves uninstalled ones.
+  serverExternalPackages: ["@electric-sql/pglite", "@clinia/ai"],
   experimental: {
     // Patient ingest batches (FHIR bundles + documents) routinely exceed the
     // 1 MB default for Server Action request bodies.

@@ -9,15 +9,18 @@ import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavVfs } from "@/components/nav-vfs";
 import { PatientSwitcher } from "@/components/patient-switcher";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
+import { ResizableSidebarRail } from "@/components/resizable-sidebar";
+import { StacksIcon } from "@/components/ui/icons/stacks";
+import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 import { usePatient } from "@/contexts/patient-provider";
 import { useVfsRoute } from "@/hooks/use-vfs-route";
-import { GitMergeIcon, InboxUploadIcon, MessageAdd01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { UploadIcon } from "@/components/ui/icons/upload";
+import { AddCommentIcon } from "@/components/ui/icons/add-comment";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("ingestions");
   const tResolution = useTranslations("resolution");
+  const tChat = useTranslations("chat");
   const { activePatient } = usePatient();
   const { selectedPath, selectFile } = useVfsRoute();
   const router = useRouter();
@@ -40,21 +43,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navMain = [
     {
-      title: "New chat",
+      title: tChat("newChat"),
       onClick: startChat,
-      icon: <HugeiconsIcon icon={MessageAdd01Icon} strokeWidth={2} />,
+      icon: <AddCommentIcon />,
     },
     {
       title: t("navLabel"),
       url: ingestionsUrl,
       isActive: ingestionsUrl !== undefined && pathname === ingestionsUrl,
-      icon: <HugeiconsIcon icon={InboxUploadIcon} strokeWidth={2} />,
+      icon: <UploadIcon />,
     },
     {
       title: tResolution("navLabel"),
       url: resolutionUrl,
       isActive: resolutionUrl !== undefined && pathname === resolutionUrl,
-      icon: <HugeiconsIcon icon={GitMergeIcon} strokeWidth={2} />,
+      icon: <StacksIcon />,
     },
   ];
 
@@ -73,7 +76,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
         <NavSecondary className="mt-auto" />
       </SidebarContent>
-      <SidebarRail />
+      <ResizableSidebarRail />
     </Sidebar>
   );
 }

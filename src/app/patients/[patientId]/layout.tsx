@@ -2,8 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ResizableSidebarProvider } from "@/components/resizable-sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { PatientProvider } from "@/contexts/patient-provider";
+import { VfsListingProvider } from "@/contexts/vfs-listing-provider";
 import { listPatients } from "@/lib/context-engine-client/actions";
 
 export default async function PatientLayout({
@@ -22,14 +24,16 @@ export default async function PatientLayout({
 
   return (
     <PatientProvider initialPatients={patients} activePatientId={id}>
-      <SidebarProvider>
-        <Suspense>
-          <AppSidebar />
-        </Suspense>
-        {/* min-w-0: without it a wide table's minimum width grows the page past the viewport
+      <VfsListingProvider>
+        <ResizableSidebarProvider>
+          <Suspense>
+            <AppSidebar />
+          </Suspense>
+          {/* min-w-0: without it a wide table's minimum width grows the page past the viewport
             instead of scrolling inside its own pane. */}
-        <SidebarInset className="min-w-0">{children}</SidebarInset>
-      </SidebarProvider>
+          <SidebarInset className="min-w-0">{children}</SidebarInset>
+        </ResizableSidebarProvider>
+      </VfsListingProvider>
     </PatientProvider>
   );
 }

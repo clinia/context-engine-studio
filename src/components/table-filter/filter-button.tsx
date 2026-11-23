@@ -13,8 +13,7 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type FilterMenuLabels, FilterMenuItems } from "@/components/table-filter/filter-menu";
-import { FilterIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { FilterListIcon } from "@/components/ui/icons/filter-list";
 
 /**
  * Every filter the table has, from the page header.
@@ -39,7 +38,7 @@ export function FilterButton({
         render={<Button variant="ghost" size="icon" className="relative h-7 w-7" />}
         aria-label={labels.filter}
       >
-        <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
+        <FilterListIcon />
         {active.length > 0 && (
           <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />
         )}

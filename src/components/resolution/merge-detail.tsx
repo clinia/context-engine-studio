@@ -5,7 +5,6 @@ import * as React from "react";
 
 import { Disclosure } from "@/components/resolution/disclosure";
 import { EvidenceList } from "@/components/resolution/evidence-list";
-import { useFormatIdentity } from "@/components/resolution/identity";
 import { STEP_FILL } from "@/components/resolution/merge-summary";
 import { formatCodeSystem, SourceTag, type Records } from "@/components/resolution/record-detail";
 import { LEVEL_DOT } from "@/components/resolution/resolution-badges";
@@ -34,9 +33,7 @@ function useRecordNumbers(reasoning: MergeReasoning): Map<string, number> {
 
 function RecordNumber({ n }: { n: number | undefined }) {
   return (
-    <span className="w-6 shrink-0 font-mono text-[0.6875rem] text-muted-foreground">
-      #{n ?? "?"}
-    </span>
+    <span className="w-6 shrink-0 font-mono text-body-xs text-muted-foreground">#{n ?? "?"}</span>
   );
 }
 
@@ -44,7 +41,6 @@ function RecordNumber({ n }: { n: number | undefined }) {
 function useLinkPhrase(): (link: MergeLink) => string {
   const t = useTranslations("resolution.reasoning");
   const explainRule = useExplainRule();
-  const formatIdentity = useFormatIdentity();
 
   return (link) => {
     const evidence = link.decision.decision.evidence;
@@ -53,9 +49,8 @@ function useLinkPhrase(): (link: MergeLink) => string {
       case "source":
         return t("phraseSource");
       case "identity": {
-        const match = evidence.find((item) => item.kind === "medication-identity-match");
-        if (match) return formatIdentity(match.a);
-        return explainRule(link.decision.decision.ruleId, "merge");
+        const match = evidence.find((item) => item.kind === "identity-match");
+        return match?.a.display ?? explainRule(link.decision.decision.ruleId, "merge");
       }
       case "code": {
         const exact = evidence.find((item) => item.kind === "exact-code-match");
@@ -76,8 +71,8 @@ function useLinkPhrase(): (link: MergeLink) => string {
 
 const TRAIL_DOT: Record<TrailStatus, string> = {
   decided: "",
-  passed: "border-[1.5px] border-muted-foreground/60",
-  skipped: "border-[1.5px] border-muted-foreground/30",
+  passed: "border-2 border-muted-foreground/60",
+  skipped: "border-2 border-muted-foreground/30",
 };
 
 /** Each check this link went through in order with what it did, and the evidence it recorded. */
@@ -161,9 +156,9 @@ function LinkRow({
 
 function StepHeading({ step, label }: { step: Step | null; label: string }) {
   return (
-    <p className="flex items-center gap-2 text-[0.6875rem] font-medium tracking-wide text-muted-foreground uppercase">
+    <p className="flex items-center gap-2 text-body-xs font-medium tracking-wide text-muted-foreground uppercase">
       <span
-        className={cn("size-2.5 rounded-[3px]", step ? STEP_FILL[step] : "bg-muted")}
+        className={cn("size-2.5 rounded-xs", step ? STEP_FILL[step] : "bg-muted")}
         aria-hidden
       />
       {label}
@@ -240,14 +235,14 @@ function SimilarityCell({ item }: { item: FieldSimilarity | null }) {
       title={title}
       aria-label={title}
       className={cn(
-        "block h-3.5 w-5 rounded-[3px]",
+        "block h-3.5 w-5 rounded-xs",
         missing
           ? "border border-dashed border-muted-foreground/50"
           : item.similarity >= 0.9
             ? "bg-match"
             : item.similarity >= 0.5
               ? "bg-match-partial"
-              : "ring-[1.5px] ring-mismatch ring-inset",
+              : "ring-2 ring-mismatch ring-inset",
       )}
     />
   );
@@ -282,7 +277,7 @@ export function FieldsByCheck({
   return (
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">{t("fieldsNote")}</p>
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full border-collapse text-xs">
           <thead className="bg-muted/40 text-left text-muted-foreground">
             <tr>
@@ -292,7 +287,7 @@ export function FieldsByCheck({
               {columns.length > 0 && (
                 <th scope="col" className="px-2 py-2 font-medium">
                   <span className="block">{t("step.wording")}</span>
-                  <span className="mt-1 flex gap-1 font-mono text-[0.625rem] font-normal">
+                  <span className="mt-1 flex gap-1 font-mono text-body-xs font-normal">
                     {columns.map((link) => (
                       <span key={link.recordId} className="w-5">
                         #{numbers.get(link.recordId)}
@@ -371,7 +366,7 @@ export function FieldsByCheck({
           </tbody>
         </table>
       </div>
-      <p className="flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] text-muted-foreground">
+      <p className="flex flex-wrap gap-x-3 gap-y-1 text-body-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-3.5 rounded-sm bg-match" aria-hidden />
           {t("legendSame")}
@@ -381,10 +376,7 @@ export function FieldsByCheck({
           {t("legendPartly")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span
-            className="h-2.5 w-3.5 rounded-sm ring-[1.5px] ring-mismatch ring-inset"
-            aria-hidden
-          />
+          <span className="h-2.5 w-3.5 rounded-sm ring-2 ring-mismatch ring-inset" aria-hidden />
           {t("legendDifferent")}
         </span>
         <span className="flex items-center gap-1.5">

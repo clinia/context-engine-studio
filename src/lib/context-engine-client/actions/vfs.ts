@@ -1,8 +1,9 @@
 "use server";
 
+import { defineAction } from "@/core/request-scope";
 import { toResult } from "@/lib/context-engine-client/actions/to-result";
-import { serverClient } from "@/lib/context-engine-client/server";
 import type { Result } from "@/lib/result";
+import type { VfsPath } from "@/lib/vfs-path";
 import type { BrowseResult, ReadResponse } from "@clinia/context-engine-js";
 
 /** Output format for {@link readVfs}; mirrors the `format` query of the read endpoint. */
@@ -15,12 +16,15 @@ export type VfsFormat = "narrative" | "structured" | "compact";
  * (the root when `path` is omitted), so callers fetch deeper levels on demand
  * as the user expands folders.
  */
-export async function browseVfs(patientId: string, path?: string): Promise<Result<BrowseResult>> {
-  const { data, error } = await serverClient.http.GET("/v1/patients/{patientId}/vfs", {
-    params: { path: { patientId }, query: path ? { path } : undefined },
-  });
-  return toResult(data, error);
-}
+export const browseVfs = defineAction(
+  async (driver, patientId: string, path?: VfsPath): Promise<Result<BrowseResult>> => {
+    const client = driver.getContextEngineClient();
+    const { data, error } = await client.http.GET("/v1/patients/{patientId}/vfs", {
+      params: { path: { patientId }, query: path ? { path } : undefined },
+    });
+    return toResult(data, error);
+  },
+);
 
 /**
  * Reads the rendered content of a VFS file at `path`.
@@ -29,13 +33,17 @@ export async function browseVfs(patientId: string, path?: string): Promise<Resul
  * default), `compact` (condensed Markdown), or `structured` (machine-readable
  * JSON string).
  */
-export async function readVfs(
-  patientId: string,
-  path: string,
-  format: VfsFormat = "narrative",
-): Promise<Result<ReadResponse>> {
-  const { data, error } = await serverClient.http.GET("/v1/patients/{patientId}/read", {
-    params: { path: { patientId }, query: { path, format } },
-  });
-  return toResult(data, error);
-}
+export const readVfs = defineAction(
+  async (
+    driver,
+    patientId: string,
+    path: VfsPath,
+    format: VfsFormat = "narrative",
+  ): Promise<Result<ReadResponse>> => {
+    const client = driver.getContextEngineClient();
+    const { data, error } = await client.http.GET("/v1/patients/{patientId}/read", {
+      params: { path: { patientId }, query: { path, format } },
+    });
+    return toResult(data, error);
+  },
+);

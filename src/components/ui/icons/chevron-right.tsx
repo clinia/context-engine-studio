@@ -1,0 +1,17 @@
+import { iconProps, type IconProps } from "./icon-props";
+
+export function ChevronRightIcon(props: IconProps) {
+  const { size, ...rest } = iconProps(props);
+  return (
+    <svg
+      viewBox="0 -960 960 960"
+      width={size}
+      height={size}
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      {...rest}
+    >
+      <path d="M536.92-480.62 358.77-659.15q-7.08-6.7-6.77-15.81.31-9.12 7.39-16 7.07-6.89 16.3-6.89t16.31 7.08l189.92 189.92q4.62 4.62 6.81 9.43 2.19 4.8 2.19 10.61T588.73-470q-2.19 5-6.81 9.62L391.38-269.85q-6.69 6.7-15.8 6.58-9.12-.12-16.19-7.19-7.08-7.08-7.08-16.31 0-9.23 7.08-16.31l177.53-177.54Z" />
+    </svg>
+  );
+}

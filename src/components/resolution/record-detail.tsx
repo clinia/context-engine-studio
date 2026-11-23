@@ -110,7 +110,7 @@ export function RecordDetail({
       <div className="flex items-baseline gap-2">
         <span className="min-w-0 flex-1 text-sm break-words">{record.display}</span>
         {record.status && (
-          <Badge variant="muted" className="shrink-0">
+          <Badge variant="secondary" className="shrink-0">
             {record.status}
           </Badge>
         )}

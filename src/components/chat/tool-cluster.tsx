@@ -1,14 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { ArrowDown01Icon, Loading03Icon, Settings02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { DynamicToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 
 import { useToolInspector } from "@/components/chat/tool-inspector";
 import { STATUS_DOT, formatArgs, toolStatus } from "@/components/chat/tool-format";
+import { ProgressActivityIcon } from "@/components/ui/icons/progress-activity";
+import { SettingsIcon } from "@/components/ui/icons/settings";
 import { cn } from "@/lib/utils";
+import { KeyboardArrowDownIcon } from "@/components/ui/icons/keyboard-arrow-down";
 
 /** A run of consecutive tool calls, collapsed to a count and expandable to a list. */
 export function ToolCluster({ parts }: { parts: DynamicToolUIPart[] }) {
@@ -16,24 +17,21 @@ export function ToolCluster({ parts }: { parts: DynamicToolUIPart[] }) {
   const { inspect } = useToolInspector();
   const [expanded, setExpanded] = React.useState(false);
   const running = parts.some((part) => toolStatus(part) === "running");
+  const StatusIcon = running ? ProgressActivityIcon : SettingsIcon;
 
   return (
     <div className="flex items-start gap-3 py-3">
-      <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-        <HugeiconsIcon
-          icon={running ? Loading03Icon : Settings02Icon}
-          className={cn("size-3.5", running && "animate-spin")}
-        />
+      <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-foreground">
+        <StatusIcon className={cn("size-3.5", running && "animate-spin")} />
       </div>
       <div className="min-w-0 flex-1">
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="flex min-h-7 items-center gap-2 font-mono text-[10px] font-medium tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground"
+          className="flex min-h-7 items-center gap-2 font-mono text-eyebrow-s font-medium tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
         >
           <span>{t("toolCalls", { count: parts.length })}</span>
-          <HugeiconsIcon
-            icon={ArrowDown01Icon}
+          <KeyboardArrowDownIcon
             className={cn("size-3 transition-transform", !expanded && "-rotate-90")}
           />
         </button>

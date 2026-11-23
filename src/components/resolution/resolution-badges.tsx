@@ -29,7 +29,11 @@ export function ResolutionLevelBadge({
   const t = useTranslations("resolution");
 
   return (
-    <Badge variant="outline" className={className} title={t(`levelHint.${resolution}`)}>
+    <Badge
+      variant="outline"
+      className={cn("gap-1.5", className)}
+      title={t(`levelHint.${resolution}`)}
+    >
       <span className={cn("size-1.5 rounded-full", LEVEL_DOT[resolution])} aria-hidden />
       {count === undefined ? t(`level.${resolution}`) : t(`levelCount.${resolution}`, { count })}
     </Badge>

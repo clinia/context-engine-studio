@@ -15,8 +15,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ArrowDown01Icon, ArrowUp01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { KeyboardArrowDownIcon } from "@/components/ui/icons/keyboard-arrow-down";
+import { KeyboardArrowUpIcon } from "@/components/ui/icons/keyboard-arrow-up";
 
 /** Values a chip or column title shows before the rest collapse into `+N`. */
 const VISIBLE_VALUES = 2;
@@ -51,11 +51,11 @@ export function SortMenuItems({
         }
       >
         <DropdownMenuRadioItem value="asc">
-          <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} className="size-3.5" />
+          <KeyboardArrowUpIcon className="size-3.5" />
           {labels.sortAscending}
         </DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="desc">
-          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3.5" />
+          <KeyboardArrowDownIcon className="size-3.5" />
           {labels.sortDescending}
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
@@ -119,7 +119,7 @@ export function FilterValues({ definition }: { definition: FilterDefinition }) {
       {active.slice(0, VISIBLE_VALUES).map((value) => (
         <span key={value}>{definition.renderValue(value)}</span>
       ))}
-      {overflow > 0 && <Badge variant="muted">+{overflow}</Badge>}
+      {overflow > 0 && <Badge variant="secondary">+{overflow}</Badge>}
     </>
   );
 }

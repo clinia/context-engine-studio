@@ -1,6 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from "@/components/ui/empty";
+import { ErrorIcon } from "@/components/ui/icons/error";
+import { InfoIcon } from "@/components/ui/icons/info";
+import { StacksIcon } from "@/components/ui/icons/stacks";
+import { Skeleton } from "@/components/ui/skeleton";
 import * as React from "react";
 
 import { FactDetailPanel } from "@/components/resolution/fact-detail-panel";
@@ -52,23 +58,43 @@ export function FactsLane({
   return (
     <div className="relative flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-auto">
+        {/* The table scrolls inside its own container, so its header can stick. */}
+        <div className="min-h-0 flex-1 overflow-auto [&>[data-slot=table-container]]:max-h-full">
           {offPageMissing && (
-            <p className="border-b border-border px-4 py-2 text-sm text-muted-foreground">
-              {t("factNotFound")}
-            </p>
+            <div className="px-4 pt-4">
+              <Alert role="note">
+                <InfoIcon />
+                <AlertDescription>{t("factNotFound")}</AlertDescription>
+              </Alert>
+            </div>
           )}
           {(state.status === "loading" || state.status === "idle") && (
-            <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t("loading")}</p>
+            // Shaped like the table's rows.
+            <div className="flex flex-col gap-3 px-4 py-4" aria-busy="true">
+              <span className="sr-only">{t("loading")}</span>
+              {Array.from({ length: 8 }, (_, row) => (
+                <Skeleton key={row} className="h-7 w-full" />
+              ))}
+            </div>
           )}
           {state.status === "error" && (
-            <p className="px-4 py-10 text-center text-sm text-destructive">{state.error}</p>
+            <div className="p-4">
+              <Alert variant="destructive" role="note">
+                <ErrorIcon />
+                <AlertDescription>{state.error}</AlertDescription>
+              </Alert>
+            </div>
           )}
           {state.status === "loaded" &&
             (facts.length === 0 ? (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-                {t("emptyFacts")}
-              </p>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <StacksIcon />
+                  </EmptyMedia>
+                  <EmptyDescription>{t("emptyFacts")}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <FactsTable facts={facts} selectedId={factId} onSelect={selectFact} />
             ))}

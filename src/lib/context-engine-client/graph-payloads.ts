@@ -1,7 +1,6 @@
 import type {
   ExtractedFactNode,
   FactConflicts,
-  MedicationIdentity,
   ResolutionDecisionEdge,
 } from "@clinia/context-engine-js";
 
@@ -11,8 +10,6 @@ export type DecisionEdgePayload = ResolutionDecisionEdge["payload"];
 
 /** One layer's evidence on a decision, discriminated on `kind`. */
 export type LayerEvidence = DecisionEdgePayload["evidence"][number];
-
-export type { MedicationIdentity };
 
 export type Verdict = DecisionEdgePayload["verdict"];
 export type ResolutionLevel = DecisionEdgePayload["resolution"];
@@ -26,7 +23,10 @@ export type FieldVerdict = FactConflicts[string];
 export type ExtractedFactPayload = ExtractedFactNode["payload"];
 
 /** A clinical code as a record carries it. `display` is the source's own wording. */
-export type Coding = NonNullable<ExtractedFactPayload["codes"]>[number];
+// TODO(CCE-1989): include laboratory once its payload is finalized and able to be rendered in the studio.
+export type Coding = NonNullable<
+  Exclude<ExtractedFactPayload, { type: "laboratory" }>["codes"]
+>[number];
 
 /** Where one extracted record came from. */
 export type SourceReference = ExtractedFactPayload["source"];

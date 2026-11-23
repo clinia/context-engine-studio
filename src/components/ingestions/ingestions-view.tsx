@@ -12,7 +12,12 @@ import { RefreshControl } from "@/components/refresh-control";
 import type { FilterDefinition, SortDefinition } from "@/components/table-filter/definitions";
 import { FilterButton } from "@/components/table-filter/filter-button";
 import { FilterSortBar } from "@/components/table-filter/filter-sort-bar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from "@/components/ui/empty";
+import { ErrorIcon } from "@/components/ui/icons/error";
+import { UploadIcon } from "@/components/ui/icons/upload";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePatient } from "@/contexts/patient-provider";
 import {
   DEFAULT_INGESTION_ORDER,
@@ -23,8 +28,8 @@ import {
 import { listIngestions } from "@/lib/context-engine-client/actions";
 import { attempt } from "@/lib/result";
 import type { Ingestion, IngestionStatus } from "@clinia/context-engine-js";
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronLeftIcon } from "@/components/ui/icons/chevron-left";
+import { ChevronRightIcon } from "@/components/ui/icons/chevron-right";
 
 type ListState =
   | { status: "loading" }
@@ -213,18 +218,38 @@ export function IngestionsView() {
             }
           />
 
-          <div className="min-h-0 flex-1 overflow-auto">
+          {/* The table scrolls inside its own container, so its header can stick. */}
+          <div className="min-h-0 flex-1 overflow-auto [&>[data-slot=table-container]]:max-h-full">
             {state.status === "loading" && (
-              <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t("loading")}</p>
+              // Shaped like the table's rows.
+              <div className="flex flex-col gap-3 px-4 py-4" aria-busy="true">
+                <span className="sr-only">{t("loading")}</span>
+                {Array.from({ length: 6 }, (_, row) => (
+                  <Skeleton key={row} className="h-8 w-full" />
+                ))}
+              </div>
             )}
             {state.status === "error" && (
-              <p className="px-4 py-10 text-center text-sm text-destructive">{state.error}</p>
+              <div className="p-4">
+                <Alert variant="destructive" role="note">
+                  <ErrorIcon />
+                  <AlertDescription>{state.error}</AlertDescription>
+                </Alert>
+              </div>
             )}
             {state.status === "loaded" &&
               (ingestions.length === 0 ? (
-                <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-                  {status.length === 0 ? t("empty") : t("emptyFiltered")}
-                </p>
+                // A filter that empties the list is announced, so a screen reader hears the result.
+                <Empty role={status.length === 0 ? undefined : "status"}>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <UploadIcon />
+                    </EmptyMedia>
+                    <EmptyDescription>
+                      {status.length === 0 ? t("empty") : t("emptyFiltered")}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               ) : (
                 <IngestionsTable
                   ingestions={ingestions}
@@ -250,7 +275,7 @@ export function IngestionsView() {
                 onClick={() => setPage(page - 1)}
                 aria-label={t("previousPage")}
               >
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
+                <ChevronLeftIcon />
               </Button>
               <Button
                 variant="ghost"
@@ -259,7 +284,7 @@ export function IngestionsView() {
                 onClick={() => setPage(page + 1)}
                 aria-label={t("nextPage")}
               >
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
+                <ChevronRightIcon />
               </Button>
             </div>
           )}

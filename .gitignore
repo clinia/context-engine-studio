@@ -24,7 +24,7 @@
 .DS_Store
 *.pem
 
-# local studio chat store (sqlite)
+# local studio chat store (PGlite)
 /.data
 
 # debug

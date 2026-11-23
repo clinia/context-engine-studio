@@ -1,13 +1,15 @@
 import * as React from "react";
-import { AiBrain01Icon, SparklesIcon, UserIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { DynamicToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 
 import { Markdown } from "@/components/markdown";
 import { ToolCluster } from "@/components/chat/tool-cluster";
+import { useVfsLinkResolver } from "@/hooks/use-vfs-route";
 import type { ChatStepUsage, ChatUIMessage } from "@/lib/chat-types";
 import { cn } from "@/lib/utils";
+import { PsychologyIcon } from "@/components/ui/icons/psychology";
+import { WandStarsIcon } from "@/components/ui/icons/wand-stars";
+import { PersonIcon } from "@/components/ui/icons/person";
 
 type MessagePart = ChatUIMessage["parts"][number];
 
@@ -31,7 +33,7 @@ export function MessageRow({
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center gap-2 font-mono text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+        <div className="mb-1 flex items-center gap-2 font-mono text-eyebrow-s font-medium tracking-widest text-muted-foreground uppercase">
           <span>{label}</span>
         </div>
         {children}
@@ -57,6 +59,7 @@ function splitSteps(parts: MessagePart[]): MessagePart[][] {
 /** Renders the rows for one step's parts (reasoning, grouped tools, text). */
 function StepRows({ parts }: { parts: MessagePart[] }) {
   const t = useTranslations("chat");
+  const resolveLink = useVfsLinkResolver();
   const rows: React.ReactNode[] = [];
   let toolRun: DynamicToolUIPart[] = [];
 
@@ -78,7 +81,7 @@ function StepRows({ parts }: { parts: MessagePart[] }) {
       rows.push(
         <MessageRow
           key={index}
-          icon={<HugeiconsIcon icon={AiBrain01Icon} className="size-3.5" />}
+          icon={<PsychologyIcon className="size-3.5" />}
           iconClassName="bg-muted text-muted-foreground"
           label={t("reasoning")}
         >
@@ -94,11 +97,11 @@ function StepRows({ parts }: { parts: MessagePart[] }) {
       rows.push(
         <MessageRow
           key={index}
-          icon={<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />}
+          icon={<WandStarsIcon className="size-3.5" />}
           iconClassName="bg-foreground text-background"
           label={t("assistant")}
         >
-          <Markdown>{part.text}</Markdown>
+          <Markdown resolveLink={resolveLink}>{part.text}</Markdown>
         </MessageRow>,
       );
     }
@@ -160,7 +163,7 @@ function UserMessage({ message }: { message: ChatUIMessage }) {
         part.type === "text" ? (
           <MessageRow
             key={index}
-            icon={<HugeiconsIcon icon={UserIcon} className="size-3.5" />}
+            icon={<PersonIcon className="size-3.5" />}
             iconClassName="bg-secondary text-secondary-foreground"
             label={t("you")}
           >
@@ -192,7 +195,7 @@ export function ChatMessage({ message }: { message: ChatUIMessage }) {
             {usage ? (
               <TokenUsage
                 usage={usage}
-                className="block pl-10 font-mono text-[10px] text-muted-foreground/70"
+                className="block pl-10 font-mono text-body-xs text-muted-foreground"
               />
             ) : null}
           </div>

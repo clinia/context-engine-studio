@@ -26,8 +26,10 @@ import {
 import { WEAKEST_FIRST } from "@/lib/resolution/levels";
 import { deriveMergeReasoning } from "@/lib/resolution/merge-reasoning";
 import { groupMembersBySource, type SourceGroup } from "@/lib/resolution/source-groups";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { CloseIcon } from "@/components/ui/icons/close";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorIcon } from "@/components/ui/icons/error";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const NO_RECORDS: Records = {};
 
@@ -40,7 +42,7 @@ function RuleGroup({ group, records }: { group: DecisionGroup; records: Records 
   const explainRule = useExplainRule();
 
   return (
-    <div className="space-y-1.5 rounded-xl border border-border px-3 py-2.5">
+    <div className="space-y-1.5 rounded-lg border border-border px-3 py-2.5">
       <div className="flex items-baseline gap-2">
         <p className="min-w-0 flex-1 text-sm">{explainRule(group.ruleId, "merge")}</p>
         <span className="shrink-0 text-sm tabular-nums">
@@ -114,7 +116,7 @@ function SourceGroupBlock({ group, records }: { group: SourceGroup; records: Rec
   const t = useTranslations("resolution");
 
   return (
-    <div className="rounded-xl border border-border px-3 py-2.5">
+    <div className="rounded-lg border border-border px-3 py-2.5">
       <div className="flex flex-wrap items-baseline gap-x-2">
         <span className="min-w-0 flex-1 font-mono text-xs break-words">
           {group.label ?? t("sourceUnknown")}
@@ -237,9 +239,16 @@ export function FactDetailPanel({
 
   const status =
     decisionsState.status === "loading" || decisionsState.status === "idle" ? (
-      <p className="text-sm text-muted-foreground">{t("loading")}</p>
+      <div className="flex flex-col gap-2" aria-busy="true">
+        <span className="sr-only">{t("loading")}</span>
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
     ) : decisionsState.status === "error" ? (
-      <p className="text-sm text-destructive">{decisionsState.error}</p>
+      <Alert variant="destructive" role="note">
+        <ErrorIcon />
+        <AlertDescription>{decisionsState.error}</AlertDescription>
+      </Alert>
     ) : null;
 
   return (
@@ -256,7 +265,7 @@ export function FactDetailPanel({
           </p>
         </div>
         <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t("closeDetail")}>
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+          <CloseIcon />
         </Button>
       </div>
 
@@ -297,7 +306,7 @@ export function FactDetailPanel({
         )}
 
         <Section title={t("reasoning.moreTitle")}>
-          <div className="divide-y divide-border/60 rounded-xl border border-border">
+          <div className="divide-y divide-border/60 rounded-lg border border-border">
             {reasoning && reasoning.links.length > 0 && (
               <>
                 <DetailRow

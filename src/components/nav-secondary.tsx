@@ -11,8 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { MessageQuestionIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HelpIcon } from "@/components/ui/icons/help";
 
 export function NavSecondary({ ...props }: React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   const t = useTranslations("navActions");
@@ -22,8 +21,10 @@ export function NavSecondary({ ...props }: React.ComponentPropsWithoutRef<typeof
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<a href="#" />}>
-              <HugeiconsIcon icon={MessageQuestionIcon} strokeWidth={2} />
+            <SidebarMenuButton
+              render={<a href="https://docs.clinia.com" target="_blank" rel="noreferrer" />}
+            >
+              <HelpIcon />
               <span>{t("help")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

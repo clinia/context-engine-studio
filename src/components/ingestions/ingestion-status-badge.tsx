@@ -29,7 +29,7 @@ export function IngestionStatusBadge({
   const t = useTranslations("ingestions.status");
 
   return (
-    <Badge variant="outline" className={className}>
+    <Badge variant="outline" className={cn("gap-1.5", className)}>
       <span className={cn("size-1.5 rounded-full", DOT[status])} aria-hidden />
       {t(status)}
     </Badge>

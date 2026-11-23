@@ -22,7 +22,11 @@
     "inputLabel": "Input",
     "outputLabel": "Output",
     "done": "done",
-    "failed": "failed"
+    "failed": "failed",
+    "newChat": "New chat",
+    "close": "Close",
+    "send": "Send",
+    "stop": "Stop"
   },
   "navVfs": {
     "label": "Virtual file system",
@@ -43,12 +47,15 @@
     "tabNarrative": "Narrative",
     "tabCompact": "Compact",
     "tabStructured": "Structured",
-    "openResolution": "Resolution"
+    "openResolution": "Resolution",
+    "factLoadError": "Failed to load this fact's resolution"
   },
   "navActions": {
     "deletePatient": "Delete patient",
     "help": "Help",
-    "deleteTitle": "Delete patient?",
+    "moreActions": "More actions",
+    "deleteTitle": "Delete \"{id}\"?",
+    "deleteConfirmLabel": "To confirm, type {id}",
     "deleteDescription": "This permanently removes {name} and all associated entities, events, and relationships. This action cannot be undone.",
     "cancel": "Cancel",
     "confirmDelete": "Delete patient",
@@ -67,24 +74,44 @@
   },
   "patientIngest": {
     "onboardingTitle": "Add your first patient",
-    "onboardingDescription": "Name a patient and drop a folder of clinical files (FHIR or CDA) to ingest.",
+    "onboardingDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, PDFs or images) to ingest.",
     "createTitle": "Create a patient",
-    "createDescription": "Name a patient and drop a folder of clinical files (FHIR or CDA) to ingest.",
+    "createDescription": "Name a patient and drop a folder of clinical files (FHIR, CDA, PDFs or images) to ingest.",
     "patientIdLabel": "Patient ID",
     "patientIdPlaceholder": "Auto-detected from the folder name",
     "dropzoneTitle": "Drop a patient folder here",
     "dropzoneHint": "or click to browse",
     "filesDetected": "{count, plural, one {# file detected} other {# files detected}}",
-    "filesSkipped": "{count, plural, one {# skipped} other {# skipped}} (only .json and .xml are ingested)",
+    "filesSkipped": "{count, plural, one {# skipped} other {# skipped}} (only .json, .xml, .pdf, .tif, .tiff, .jpg, .jpeg and .png are ingested)",
     "clear": "Clear",
     "submit": "Create patient & ingest",
     "submitting": "Ingesting…",
     "submittingProgress": "Ingesting… ({current}/{total})",
+    "extractingProgress": "Extracting text from {name}… ({current}/{total})",
+    "partialNotice": "{accepted, plural, =0 {No file was added in full} one {# file was added} other {# files were added}}. The files marked with a cross show why the rest were not.",
+    "continue": "Continue",
+    "outcome": {
+      "sent": "Sent",
+      "tooLarge": "Too large to upload",
+      "extractionFailed": "Text extraction failed",
+      "disabled": "File ingestion is off",
+      "rejected": "Not accepted",
+      "partlySent": "Only partly accepted",
+      "notSent": "Not sent",
+      "unreadable": "Could not be read",
+      "invalidJson": "Not valid JSON",
+      "notFhir": "Not a FHIR resource"
+    },
     "errors": {
+      "patientIdRequired": "Enter a patient ID, or drop a folder to use its name.",
+      "noFiles": "Add a folder with at least one FHIR (.json) or CDA (.xml) file.",
       "unreadable": "{name} could not be read.",
       "invalidJson": "{name} is not valid JSON.",
       "notFhir": "{name} is not a FHIR resource — it has no resourceType.",
-      "fileTooLarge": "{name} is too large to upload in one request."
+      "fileTooLarge": "{name} is too large to upload in one request.",
+      "fileFailed": "{name}: {message}",
+      "fileOverLimit": "{name} is too large to upload.",
+      "noneIngested": "Nothing from the {count} files was added to the patient. The files marked with a cross show why."
     }
   },
   "ingestions": {
@@ -127,7 +154,7 @@
     "detailIntakeMissing": "Not recorded for this submission.",
     "detailIntakeUnit": "{unit} ({count})",
     "detailIntakeEmpty": "Nothing was read from this submission.",
-    "startedTitle": "{count, plural, one {# file accepted} other {# files accepted}}",
+    "startedTitle": "{count, plural, =0 {No file accepted in full} one {# file accepted} other {# files accepted}}",
     "startedDescription": "Processing runs in the background. This patient's data appears as each submission lands.",
     "startedAction": "View ingestions",
     "status": {
@@ -145,7 +172,9 @@
     "intakeUnit": {
       "resource": "Resources",
       "section": "Sections",
-      "message": "Messages"
+      "message": "Messages",
+      "page": "Pages",
+      "file": "Files"
     },
     "intakeOutcome": {
       "structured": "Structured",
@@ -155,7 +184,12 @@
     "intakeReason": {
       "unsupported": "Unsupported",
       "unusable": "Unusable",
-      "empty": "Empty"
+      "empty": "Empty",
+      "over_limit": "Over limit"
+    },
+    "intakeLimit": {
+      "file_bytes": "max {value}",
+      "pages_per_file": "max {value} pages"
     }
   },
   "resolution": {
@@ -306,40 +340,16 @@
         "concept-identity-mismatch": "different concepts, by {rung}"
       },
       "identity": {
-        "medication-identity-match": "same ingredients and route",
-        "medication-identity-mismatch": "different ingredients or route",
-        "medication-identity-incomplete": "identity incomplete, missing ingredient or route"
-      },
-      "identityLine": "{ingredients} · {route}",
-      "routeOther": "other ({forms})",
-      "route": {
-        "oral": "oral",
-        "rectal": "rectal",
-        "sublingual": "sublingual",
-        "buccal": "buccal",
-        "nasogastric": "nasogastric",
-        "intramuscular": "intramuscular",
-        "intravenous": "intravenous",
-        "subcutaneous": "subcutaneous",
-        "intradermal": "intradermal",
-        "intrathecal": "intrathecal",
-        "intraperitoneal": "intraperitoneal",
-        "intra-articular": "intra-articular",
-        "intraosseous": "intraosseous",
-        "hemodialysis": "hemodialysis",
-        "urethral": "urethral",
-        "intrauterine": "intrauterine",
-        "intraocular": "intraocular",
-        "intravesical": "intravesical",
-        "topical": "topical",
-        "transdermal": "transdermal",
-        "ophthalmic": "ophthalmic",
-        "otic": "otic",
-        "nasal": "nasal",
-        "vaginal": "vaginal",
-        "inhalation": "inhalation",
-        "nebulization": "nebulization",
-        "other": "other"
+        "medication": {
+          "identity-match": "same ingredients and route",
+          "identity-mismatch": "different ingredients or route",
+          "identity-incomplete": "identity incomplete, missing ingredient or route"
+        },
+        "laboratory": {
+          "identity-match": "same component, specimen and property",
+          "identity-mismatch": "different component, specimen or property",
+          "identity-incomplete": "identity incomplete, a result was not identified"
+        }
       },
       "fieldSimilarity": "{field} {score}",
       "semanticSimilarity": "Descriptions {score} similar in meaning.",
@@ -356,9 +366,9 @@
     },
     "rule": {
       "source-ref-equality": "Both records cite the same source record.",
-      "medication-identity-match": "Both medications have the same ingredients and route.",
-      "medication-identity-mismatch": "The medications differ in their ingredients or route.",
-      "medication-identity-incomplete": "One side lacks an ingredient or a route, so nothing can match it.",
+      "identity-match": "Both records have the same identity.",
+      "identity-mismatch": "The records differ in their identity.",
+      "identity-incomplete": "One side lacks part of its identity, so nothing can match it.",
       "deterministic-code-exact": "Both records carry the same clinical code.",
       "concept-identity-match": "Both records resolve to the same clinical concept.",
       "deterministic-code-mismatch": "They carry different codes in the same code system.",

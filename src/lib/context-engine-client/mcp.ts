@@ -1,12 +1,11 @@
 import "server-only";
 
-import { mcpUrl } from "@/env/server";
+import type { TokenProvider } from "@clinia/context-engine-js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { dynamicTool, jsonSchema } from "ai";
 
 import { name as CLIENT_NAME, version as CLIENT_VERSION } from "../../../package.json";
-import { tokenProvider } from "./auth";
 
 /** Name of the MCP prompt that primes the clinical VFS agent. */
 const VFS_AGENT_PROMPT = "vfs_agent";
@@ -59,26 +58,40 @@ function toToolText(result: unknown): string {
     .join("\n");
 }
 
+/** Opens connections to the engine's MCP server. */
+export interface ContextEngineMcp {
+  /**
+   * Opens a fresh connection, discovers the engine's tools and adapts them into AI SDK tools
+   * with `patient_id`/`session_id` injected at execution time.
+   * - The engine MCP server is stateless, so each chat turn opens its own connection and must
+   *   {@link ContextEngineMcpSession.close} it once the model has finished streaming.
+   */
+  open(params: { patientId: string; sessionId?: string }): Promise<ContextEngineMcpSession>;
+}
+
 /**
- * Opens a fresh connection to the (stateless) engine MCP server, discovers its
- * tools, and adapts them into AI SDK tools with `patient_id`/`session_id`
- * injected at execution time.
- *
- * The engine MCP server is stateless — it issues no session id and builds a fresh
- * server per request — so there is nothing to reuse across requests and no
- * singleton to cache. Each chat request opens its own session and must
- * {@link ContextEngineMcpSession.close} it once the model has finished streaming.
+ * Creates a {@link ContextEngineMcp} for the engine at `apiUrl`.
+ * - `tokenProvider` is `undefined` when the engine is reached without authentication.
  */
-export async function openContextEngineMcp(params: {
-  patientId: string;
-  sessionId?: string;
-}): Promise<ContextEngineMcpSession> {
+export function createContextEngineMcp(
+  apiUrl: string,
+  tokenProvider: TokenProvider | undefined,
+): ContextEngineMcp {
+  // The stateless MCP route sits at `/mcp` on the REST API's host.
+  const mcpUrl = `${apiUrl.replace(/\/$/, "")}/mcp`;
+  return { open: (params) => openSession(mcpUrl, tokenProvider, params) };
+}
+
+async function openSession(
+  mcpUrl: string,
+  tokenProvider: TokenProvider | undefined,
+  params: { patientId: string; sessionId?: string },
+): Promise<ContextEngineMcpSession> {
   const { patientId, sessionId } = params;
 
   // Attach the bearer token as a request header on the MCP transport. This
   // channel uses the MCP SDK rather than the REST client, so it can't reuse the
   // openapi-fetch middleware — it calls the shared provider directly.
-  // `tokenProvider` is `undefined` in insecure mode (unsecured local server).
   const token = tokenProvider ? await tokenProvider() : null;
   const transport = new StreamableHTTPClientTransport(
     new URL(mcpUrl),

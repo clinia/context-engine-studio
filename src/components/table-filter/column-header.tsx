@@ -16,10 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FilterListIcon } from "@/components/ui/icons/filter-list";
+import { KeyboardArrowDownIcon } from "@/components/ui/icons/keyboard-arrow-down";
+import { KeyboardArrowUpIcon } from "@/components/ui/icons/keyboard-arrow-up";
 import { TableHead } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { ArrowDown01Icon, ArrowUp01Icon, FilterIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 
 /**
  * A column title, and the sorting and filtering reachable from it.
@@ -52,7 +53,11 @@ export function ColumnHeader({
   }
 
   const filtered = filter !== undefined && isFilterActive(filter);
-  const icon = filtered ? FilterIcon : sort?.direction === "asc" ? ArrowUp01Icon : ArrowDown01Icon;
+  const Icon = filtered
+    ? FilterListIcon
+    : sort?.direction === "asc"
+      ? KeyboardArrowUpIcon
+      : KeyboardArrowDownIcon;
 
   return (
     <TableHead className={cn("p-0", className)}>
@@ -66,11 +71,7 @@ export function ColumnHeader({
           }
         >
           {label}
-          <HugeiconsIcon
-            icon={icon}
-            strokeWidth={2}
-            className={cn("size-3", filtered || sort ? "text-foreground" : "opacity-50")}
-          />
+          <Icon className={cn("size-3", filtered || sort ? "text-foreground" : "opacity-50")} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-48">
           {sort && <SortMenuItems definition={sort} labels={labels} />}

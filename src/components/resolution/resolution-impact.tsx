@@ -1,11 +1,9 @@
 "use client";
-
-import { InformationCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslations } from "next-intl";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ResolutionImpact as Impact } from "@/lib/context-engine-client/actions";
+import { InfoIcon } from "@/components/ui/icons/info";
 
 function Cell({
   label,
@@ -19,7 +17,7 @@ function Cell({
   emphasis?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-border px-3 py-2">
+    <div className="rounded-lg border border-border px-3 py-2">
       <dt className="flex items-center gap-1 text-xs text-muted-foreground">
         {label}
         <Tooltip>
@@ -27,12 +25,16 @@ function Cell({
             aria-label={hint}
             className="rounded-full text-muted-foreground/70 outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} className="size-3.5" />
+            <InfoIcon className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent>{hint}</TooltipContent>
         </Tooltip>
       </dt>
-      <dd className={emphasis ? "text-lg tabular-nums" : "text-lg tabular-nums text-foreground"}>
+      <dd
+        className={
+          emphasis ? "text-body-m tabular-nums" : "text-body-m tabular-nums text-foreground"
+        }
+      >
         {value}
       </dd>
     </div>

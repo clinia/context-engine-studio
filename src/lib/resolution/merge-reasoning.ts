@@ -20,7 +20,7 @@ const LAYER_STEP: Record<LayerEvidence["layer"], Step> = {
 
 const RULE_STEP: Partial<Record<string, Step>> = {
   "source-ref-equality": "source",
-  "medication-identity-match": "identity",
+  "identity-match": "identity",
   "deterministic-code-exact": "code",
   "concept-identity-match": "code",
   "nlp-normalization-match": "wording",

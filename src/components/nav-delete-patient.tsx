@@ -6,8 +6,7 @@ import { useTranslations } from "next-intl";
 import { DeletePatientDialog } from "@/components/delete-patient-dialog";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { usePatient } from "@/contexts/patient-provider";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete02Icon } from "@hugeicons/core-free-icons";
+import { DeleteIcon } from "@/components/ui/icons/delete";
 
 /** Sidebar menu item that deletes the active patient behind a confirm dialog. */
 export function NavDeletePatient() {
@@ -23,7 +22,7 @@ export function NavDeletePatient() {
           className="text-destructive hover:text-destructive focus:text-destructive"
           onClick={() => setConfirmOpen(true)}
         >
-          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+          <DeleteIcon />
           <span>{t("deletePatient")}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
